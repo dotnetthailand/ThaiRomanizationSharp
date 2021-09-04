@@ -57,36 +57,7 @@ def edits1(word):
 ## Input = list 0f (w,pos)
 ## Output = list of (w,pos,ner_tag)
 ## adapted from http://sklearn-crfsuite.readthedocs.io/en/latest/tutorial.html
-def ner(sent):
-    lx = []
-    if sent[-1][0] == ' ': del(sent[-1]) 
-    lx = sent2features(sent)
-    try:
-      ner_tagger
-    except NameError:
-      ner_load()
 
-    p = ner_tagger.predict_single(lx)
-    r = []
-    for i in range(len(sent)):
-        r.append(( sent[i][0], sent[i][1], p[i]))
-    return (r)
-
-def ner_load():
-    global ner_tagger
-    path = os.path.abspath(__file__)
-    ATA_PATH = os.path.dirname(path)
-    filehandler = open(ATA_PATH +'/' + 'ner-tagger.pick', 'rb') 
-    ner_tagger = pickle.load(filehandler)
-
-def wrd_len(word):
-    if len(word) > 20:
-        return('l')
-    elif len(word) > 10:
-        return('m')
-    else:
-        return('s')
-    
 def word2features(sent, i):
     word = sent[i][0]
     postag = sent[i][1]
@@ -769,8 +740,7 @@ def wordseg_colloc(Input):
             outx += WordSep.join(chart[0][EndOfSent])
             return(outx)
         else:
-            return("<Fail>"+Input+"</Fail>")
-        
+            return("<Fail>"+Input+"</Fail>")       
 
 ####################################################################
 
