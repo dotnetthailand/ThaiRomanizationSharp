@@ -9,7 +9,7 @@
 ## word_segmentation, syl_segementation written by Wirote Aroonmanakun
 ## Implemented :
 ##      chunk, ner_tag, segment, word_segment, syl_segment, word_segment_mm, word_segment_nbest,
-##      g2p, th2ipa, th2roman, pos_tag, pos_tag_wordlist, 
+##      g2p, th2roman, pos_tag_wordlist, 
 ##      read_thaidict, reset_thaidict, check_thaidict
 ##      spell_candidates,
 #########################################################
@@ -23,56 +23,14 @@ import pickle
 ##########################################################
 ## Read Dictionary in a text format one word per one line
 ##########################################################
-def read_thaidict(Filename):
-    global TDICT
-#    ATA_PATH = pkg_resources.resource_filename('tltk', '/')
-
-    if not os.path.exists(Filename):
-        path = os.path.abspath(__file__)
-        ATA_PATH = os.path.dirname(path)
-        Filename = ATA_PATH + '/' + Filename
-    file1 = open(Filename, 'r', encoding ='cp874')
-    for line in  file1:
-        w = line.rstrip()
-        w = re.sub(r'\.','\\\.',w)
-        TDICT[w] = 1
-    return(1)
-
 def read_thdict(Filename):
     global TDICT
     fileObject = open(Filename,'rb')  
     TDICT = pickle.load(fileObject)
 
-
-##########################################################
-## Clear Dictionary in a text format one word per one line
-##########################################################
-def reset_thaidict():
-    global TDICT
-    TDICT.clear()
-    return(1)
-
-#### Check whether the word existed in the dictionary 
-def check_thaidict(Word):
-    global TDICT
-    if Word in TDICT:
-        return(1)
-    else:
-        return(0)
-    
-    
 ####################################################################
 ##  spelling correction modified from Peter Norvig  http://norvig.com/spell-correct.html
 ####################################################################
-
-#def P(word, N=sum(TDICT.values())):
-#    global TDICT
-#    "Probability of `word`."
-#    return TDICT[word] / N
-
-#def spell_correction(word): 
-#    "Most probable spelling correction for word."
-#    return max(candidates(word), key=P)
 
 def spell_candidates(word): 
 #    return (known([word]) or known(edits1(word)) or known(edits2(word)) )
@@ -92,136 +50,9 @@ def edits1(word):
     inserts    = [L + c + R               for L, R in splits for c in letters]
     return list(deletes + transposes + replaces + inserts)
 
-def edits2(word): 
-    return list(e2 for e1 in edits1(word) for e2 in edits1(e1))
-
 ##########################################################################
 ## POS tagging using nltk.tag.perceptron
-#########################################################################
-# def pos_tag(Input,Option="colloc"):
-#     global tagger
-#     results = []
-#     if Option == 'mm':
-#         out = word_segment(Input,"mm")
-#     elif Option == 'ngram':    
-#         out = word_segment(Input,"ngram")
-#     else: 
-#         out = word_segment(Input)
-#     try:
-#       tagger
-#     except NameError:
-#       pos_load()
-# #    print('worsseg in pos tag',out)
-#     for x in out.split('<s/>'):
-#         tag_result = []
-#         if x != '':
-#             sent = x.split('|')
-#             if '' in sent:
-#                 sent.remove('')
-#             for (w,pos) in tagger.tag(sent):
-#                 if w == ' ':
-#                     w = '<s/>'
-#                 pos = change_tag(w,pos)
-#                 tag_result.append((w,pos))
-#             tag_result.append(('<s/>','PUNCT'))    
-#             results.append(tag_result)
-#     return(results)
-
-## pos tag on a list of words  [w1,w2,w3,...]
-# def pos_tag_wordlist(sent):
-#     global tagger
-#     results = []
-#     for (w,pos) in tagger.tag(sent):
-#         pos = change_tag(w,pos)
-#         results.append((w,pos))    
-#     return(results)
-
-def pos_load():
-    global tagger
-    tagger = PerceptronTagger(load=False)
-    path = os.path.abspath(__file__)
-    ATA_PATH = os.path.dirname(path)
-    filehandler = open(ATA_PATH +'/' + 'tnc-tagger.pick', 'rb') 
-    tagger = pickle.load(filehandler)
-
-def change_tag(w,pos):
-    if re.match(r'[\#\+\-\_\=\*\&\^\%\$\@\}\{\]\[\<\>\/]$',w):
-        pos = 'SYM'
-    elif re.match(r'[\,\;\:\.\(\)\'\"\!\?]$',w):
-        pos = 'PUNCT'
-    elif re.match(r'[0-9][0-9.,\+\-\*\/]*$',w):
-        pos = 'NUM'
-    elif re.match(r'<s/>$',w):
-        pos = 'PUNCT'        
-    elif re.match(r'[\<\>a-zA-Z\/]+$',w):
-        pos = 'SYM'        
-    elif re.match(r'[a-zA-Z0-9_]+$',w):
-        pos = 'X'
-    return(pos)
-
-
-###############################################################################################
-### chunk parse  =  segment edu + word segment + pos tag + (ner)
-### Input = Thai text
-###
-# def chunk(txt):
-#     global SegSep
-#     global SSegSep
-#     global useg_model
-#     global tagger
-#     outs = ""
-#     out = ""
-# #    print(txt)
-#     ## do syllable segmentation
-#     sylseg = syl_segment(txt)
-#     sylseg = re.sub(' ','<s/>',sylseg)
-#     sylseg = re.sub(r'([^~])<s/>',r'\1~<s/>',sylseg)
-#     sylseg = re.sub(r'<s/>([^~])',r'<s/>~\1',sylseg)
-
-#     sylcopy = sylseg
-#     sylcopy = re.sub(r'~[0-9\.\,]+~','~DIGIT~',sylcopy)
-#     sylcopy = re.sub(r'~[a-zA-Z0-9\\\/\?\'\"\(\)\.]+~','~FOREIGN~',sylcopy)
-
-#     parcopy = sylcopy.split('~')
-#     par = sylseg.split('~')
-# #    print(sylcopy)
-#     ## do edu segmentation
-#     try:
-#       useg_model
-#     except NameError:
-#       useg_model_load()
-
-#     tags = useg_model.predict([features(parcopy, index) for index in range(len(par))])
-#     lst_tag = zip(par,tags)
-#     syl_seq = ''
-#     for (w,t) in lst_tag:
-#         if t == '<u/>':
-#             ## do word segmentation
-#             out = wordseg_colloc(syl_seq)
-#             ## do pos tagging
-#             try:
-#               tagger
-#             except NameError:
-#               pos_load()        
-#             tag_result = []
-#             if out != '':
-#                 sent = out.split('|')
-#                 ## remove all '' from sent
-#                 sent = list(filter(lambda a: a != '', sent))
-#                 for (w,pos) in tagger.tag(sent):
-#                     pos = change_tag(w,pos)
-#                     ## do ner tagging
-#                     tag_result.append((w,pos))
-#                 out = pack_ner(ner(tag_result))
-#                 outs += out
-#             syl_seq = ''
-#             outs += '<u/>'
-#         else:
-#             syl_seq += w+'~'
-#     return(outs)
-    
-
-###################################################################################
+#########################################################################    
 ## named entity recognition for Person, Location, Organization
 ## Input = list 0f (w,pos)
 ## Output = list of (w,pos,ner_tag)
@@ -243,11 +74,6 @@ def ner(sent):
 
 def ner_load():
     global ner_tagger
-    # ner_tagger = CRF(algorithm='lbfgs',
-    #       c1=10,
-    #       c2=0.1,
-    #       max_iterations=100,
-    #       all_possible_transitions=False)
     path = os.path.abspath(__file__)
     ATA_PATH = os.path.dirname(path)
     filehandler = open(ATA_PATH +'/' + 'ner-tagger.pick', 'rb') 
@@ -349,9 +175,6 @@ def pack_ner(sent):
 
 ###############################################################################################
 
-
-
-###############################################################################################
 ###  segment discourse unit + word segmentation
 ###  Input = Thai text,  syllable segments will be used to determine edu
 ###  then, syllable list in each edu will be passed to word segmentation
@@ -377,7 +200,6 @@ def segment(txt):
     par = sylseg.split('~')
 #    print(sylcopy)
     
-    
     try:
       useg_model
     except NameError:
@@ -398,10 +220,6 @@ def segment(txt):
 
 def useg_model_load():
     global useg_model
-    # useg_model = Pipeline([
-    # ('vectorizer', DictVectorizer(sparse=False)),
-    # ('classifier', RandomForestClassifier(n_jobs=2, random_state=0))])
-
     path = os.path.abspath(__file__)
     ATA_PATH = os.path.dirname(path)
     filehandler = open(ATA_PATH +'/' + 'sent_segment_rfs.pick', 'rb') 
@@ -470,28 +288,6 @@ def g2p(Input):
             output = output+out+WordSep
         output = output+'<s/>'    ####write <s/> output for SegSep   
     return(output)        
-
-## return all transcriptions based on syllable parse
-# def g2p_all(inp):
-#     output = []
-#     NORMALIZE_IPA = [ ('O', '\u1D10'), ('x', '\u025B'), ('@', '\u0264'), ('N', '\u014B'), ('?', '\u0294'),('U','\u026F'),('|',' '),('~','.'),('^','.'),("'",'.'),('4','5'), ('3','4'), ('2','3'), ('1','2'), ('0','1')]
-    
-#     if inp == '': return([])            
-#     objMatch = re.match(r"[^ก-์]+$",inp)
-#     if objMatch:
-#         output = [(inp,inp)]
-#     else:
-#         lst = sylparse_all(inp)
-#         if lst == []: return([('','')])
-#         for (th,tran) in lst:
-#             tran = re.sub(r"([aeiouUxO@])\1",r"\1ː",tran)
-#             tran = re.sub(r"([ptkc])h",r"\1ʰ",tran)
-#             for k, v in NORMALIZE_IPA:
-#                 tran = tran.replace(k, v)
-#             output.append((th,tran))
-# #            print(th,tran)
-#     return(output)        
-
 
 #############################################################################################################
 ####### Segment syllable using trigram statistics, only strings matched with a defined syllable pattern will be created
@@ -569,90 +365,6 @@ def sylparse(Input):
         return(SylSep.join(schart[0][EndOfInput]))
     else:
         return('<Fail>'+Input+'</Fail>')
-
-# def sylparse_all(Input):
-#     global SylSep
-#     global PRON
-#     global PRONUN
-    
-#     PRONUN = defaultdict(list)
-#     phchart = defaultdict(dict)
-#     schartx = {}
-#     phchart.clear()
-#     tmp = []
-    
-#     EndOfInput = len(Input)
-#     for f in PRON:
-#         if f == '([ก-ฮ])' and PRON[f] == 'XOO': continue
-#         for i in range(EndOfInput):
-#             Inx = Input[i:]
-#             matchObj = re.match(f,Inx)
-#             if matchObj:
-#                 keymatch = matchObj.group()
-#                 try:
-#                     matchObj.group(3)
-#                     charmatch = matchObj.group(1) + ' ' + matchObj.group(2) + ' ' + matchObj.group(3)
-#                 except IndexError:
-#                     try:
-#                         matchObj.group(2)
-#                         charmatch = matchObj.group(1) + ' ' + matchObj.group(2) 
-#                     except IndexError:
-#                         try:
-#                             matchObj.group(1)
-#                             charmatch = matchObj.group(1) 
-#                         except IndexError:
-#                             PRONUN[matchObj.group()].append(PRON[f])
-#                 k=i+len(matchObj.group())
-#                 frm = matchObj.group()
-#                 codematch = PRON[f]
-#                 codematch = re.sub(r"[^AKYDZCRX]","",codematch)
-#                 if codematch:
-# #                    print("code char",codematch,charmatch)            
-#                     phone = ReplaceSnd(PRON[f],codematch,charmatch)
-#                     if  NotExceptionSyl(codematch,charmatch,keymatch,phone):
-#                         (phone,tone) = ToneAssign(keymatch,phone,codematch,charmatch)
-#                         if (tone < '5'): phone = re.sub(r'8',tone,phone)          
-#                         (keymatch,phone) = TransformSyl(keymatch,phone)
-# #                        phchart[0][k] = {frm+'/'+phone:1}
-#                         if k not in phchart[i]:
-#                             phchart[i][k] = {frm+'/'+phone:1}
-#                         else:
-#                             phchart[i][k].update({frm+'/'+phone:1})
-# #                        print(i,k,frm,phone)     
-#                         if  re.match(r'ทร',keymatch)  and  re.match(r"thr",phone):            #### gen more syllable  ทร   thr => s
-#                             phone=re.sub(r"thr","s",phone) 
-# #                            PRONUN[''.join(schart[i][k])].append(phone)
-#                         if k not in phchart[i]:
-#                             phchart[i][k] = {frm+'/'+phone:1}
-#                         else:
-#                             phchart[i][k].update({frm+'/'+phone:1})
-    
-#     for j in range(EndOfInput):
-#         schartx = deepcopy(phchart)
-#         if j in phchart[0]:
-#             for s1 in phchart[0][j]:
-#                 for k in phchart[j]:
-#                     for s2 in phchart[j][k]:
-#     #                    tmp = mergekaran1(s1+s2)
-#                         tmp = s1+'~'+s2
-#                         if k not in schartx[0]:
-#                             schartx[0][k] = {tmp:1}
-#                         else:
-#                             schartx[0][k].update({tmp:1})
-#         phchart = deepcopy(schartx)
-        
-#     outlst = []
-#     if EndOfInput not in phchart[0]: return([])
-#     for out in phchart[0][EndOfInput]:
-#         form = []
-#         ph = []
-#         for x in out.split('~'):
-#             (f,p) = x.split('/')
-#             form.append(f)
-#             ph.append(p)
-#         outlst.append(('~'.join(form),'~'.join(ph)))
-# #        print(form,ph)
-#     return(outlst)    
 
 def ReplaceSnd(phone,codematch,charmatch):
      global stable
@@ -988,20 +700,6 @@ def read_PhSTrigram(File):
         FrmSUnigram[x2] += float(ct)
     IFile.close()
     
-# def th2ipa(txt):
-#     out = ''
-#     NORMALIZE_IPA = [ ('O', '\u1D10'), ('x', '\u025B'), ('@', '\u0264'), ('N', '\u014B'), ('?', '\u0294'),('U','\u026F'),('|',' '),('~','.'),('^','.'),("'",'.'),('4','5'), ('3','4'), ('2','3'), ('1','2'), ('0','1')]
-#     inx = g2p(txt)
-#     for seg in inx.split('<s/>'):
-#         if seg == '': continue
-#         (th, tran) = seg.split('<tr/>')
-#         tran = re.sub(r"([aeiouUxO@])\1",r"\1ː",tran)
-#         tran = re.sub(r"([ptkc])h",r"\1ʰ",tran)
-#         for k, v in NORMALIZE_IPA:
-#             tran = tran.replace(k, v)
-#         out += tran+'<s/>'
-#     return(out)
-
 def th2roman(txt):
     out = ''
     NORMALIZE_ROM = [ ('O', 'o'), ('x', 'ae'), ('@', 'oe'), ('N', 'ng'), ('U','ue'), ('?',''), ('|',' '), ('~','-'),('^','-'),("'",'-')]
@@ -1020,39 +718,6 @@ def th2roman(txt):
     return(out)
     
 ### end of modules used in g2p  ###############    
-##############################################################################################################
-
-
-#############################################################################################################
-###  Word Segmentation for Thai texts
-### Input = a paragraph of Thai texts
-# def word_segmentX(Input):
-#     global SegSep
-#     global SSegSep
-#     output = ""
-#     out = ""
-    
-#     Input = preprocess(Input)
-#     sentLst = Input.split(SegSep)
-#     for s in sentLst:
-# #        print "s:",s
-#         inLst = s.split(SSegSep)
-#         for inp in inLst:
-#             if inp == '': continue            
-# #            print "inp:",inp
-# #            objMatch = re.match(r"[a-zA-Z0-9\-\_\+\=\(\)\*\&\^\%\$\#\@\!\~\{\}\[\]\'\"\:\;\<\>\?\/\\\. ]+",inp)
-#             objMatch = re.match(r"[^ก-์]+",inp)
-#             if objMatch:
-#                 out = inp
-#             else:
-#                 y = sylseg(inp)
-#                 out = wordseg(y)
-#             output = output+out+WordSep
-#         output = output+'<s/>'    ####write <s/> output for SegSep   
-#     return(output)        
-
-
-
 ###################################################################
 ###### Thai word segmentation using maximum collocation approach
 ###### Input is a list of syllables
@@ -1108,71 +773,7 @@ def wordseg_colloc(Input):
         
 
 ####################################################################
-#### Word segmentation using Dictionary lookup 
-#### Input = Thai string,  method = syl | word  output = n-best segmentations
-#### n-best segmentation is determined from the number of words. The fewer the better.
-#### Output is a list of n-best segmentation [ [seg1, seg2, seg3, seg4, .... ] ]
-#### If input is a multiple chunks of text, the output is the list of chunks' outputs.
-#### e.g. [ [c1seg1, c1seg2, c1seg3, c1seg4, .... ] , [c2seg1, c2seg2, c2seg3, c2seg4, .... ] ]
-######################################################################
-# def word_segment_nbest(Input,nbest):
-#     global SegSep
-#     global SSegSep
-#     output = []
-#     out = []
     
-#     Input = preprocess(Input)
-#     sentLst = Input.split(SegSep)
-#     for s in sentLst:
-#         inLst = s.split(SSegSep)
-#         for inp in inLst:
-#             if inp == '': continue            
-#             objMatch = re.match(r"[^ก-์]+",inp)  ## not Thai text
-#             if objMatch:
-#                 out = [inp]
-#             else:
-#                 out = wordsegmm_bn(inp,nbest)
-#             output.append(out)    
-#     return(output)
-
-# def wordsegmm_bn(Input,nbest):    
-#     global TDICT
-#     global EndOfSent
-#     global chartnb
-#     global SegSep
-#     global WordSep
-
-
-#     part = []
-#     chartnb = defaultdict(dict)
-#     outx = []
-#     chartnb.clear()
-    
-#     part = Input.split(SegSep)
-#     for inx in part:
-#         SylLst = list(inx)
-#         EndOfSent = len(SylLst)
-#         ## look for all possible words in the string input
-#         for i in range(EndOfSent):
-#             for j in range(i,EndOfSent+1):
-#                 wrd = ''.join(SylLst[i:j])
-#                 if wrd in TDICT and wrd != '':
-# #                    print('wrd',wrd,i,j,SylLst[i:j])
-#                     chartnb[(i,j)][wrd] = 1
-#         ## chart parse            
-#         if chartparse_mm_bn():
-#             i = 1
-#             for seg1 in sorted(chartnb[(0,EndOfSent)], key=chartnb[(0,EndOfSent)].get):
-# #                print(i,seg1)
-#                 outx.append(seg1)
-#                 i += 1
-#                 if i > nbest:
-#                     break     
-#         else:
-#             outx += ["<Fail>"+Input+"</Fail>"]
-#     return(outx)        
-
-
 def chartparse_mm_bn():
     global chartnb
     global WordSep
@@ -1192,8 +793,6 @@ def chartparse_mm_bn():
         return(1)
     else:
         return(0)
-
-
 
 ####################################################################
 #### Word segmentation using Maximal Matching (minimal word) approach
@@ -1237,7 +836,6 @@ def wordseg_mm(Input,method,spellchk):
     global chart
     global SegSep
     global WordSep
-
 
     part = []
     chart = defaultdict(dict)
@@ -1457,7 +1055,6 @@ def chart_parse():
         return(1)
     else:
         return(0)
-
 
 #############################################################################################################
 ###  Syllable Segmentation for Thai texts
@@ -1872,7 +1469,6 @@ def preprocess(input):
 
     return(input)
 
-
 #############################################################################################################
 ### initialization by read syllable patterns, syllable trigrams, and satndard dictionary
 def initial():
@@ -1903,71 +1499,10 @@ def initial():
     read_syldict(ATA_PATH +  '/thaisyl.dict')
     read_stat(ATA_PATH + '/sylseg.3g')
     read_thdict(ATA_PATH +  '/thdict')
-
     read_PhSTrigram(ATA_PATH +  '/PhSTrigram.sts')
 
     return(1)
 
-
 ############ END OF GENERAL MODULES ##########################################################################
 
 initial()
-
-#import time
-
-#start = time.time()
-#tltk.corpus.TNC3g_load()
-#tltk.corpus.TNC_load()
-#end = time.time()
-#print(end - start)
-
-
-################# testing area #######################################
-#print(word_segment_mm('นายกรัฐมนตรีกล่าวกับคนขับรถประจำทางหลวงสายสองว่า อยากวิงวอนให้ใช้ความรอบคอบอย่าหลงเชื่อคำชักจูงหรือปลุกระดมของพวกหัวรุนแรงจากทางการไฟฟ้า'))
-#print(word_segment('นายกรัฐมนตรีกล่าวกับคนขับรถประจำทางหลวงสายสองว่า อยากวิงวอนให้ใช้ความรอบคอบอย่าหลงเชื่อคำชักจูงหรือปลุกระดมของพวกหัวรุนแรงจากทางการไฟฟ้า'))
-
-#print(word_segment('นายกรัฐมนตรีกล่าวกับสำนักข่าวซีซีบีและเอ็นบีดีวายว่า'))
-#print(word_segment_mm('นายกรัฐมนตรีกล่าวกับผูสือข่าวว่า','prob'))
-#print(word_segment_mm('นายกรัฐมนตรีกล่าวกับผู้สือข่าวว่า','prob'))
-#start = time.time()
-#print(word_segment('นายกรัฐมนตรีกล่าวกับคนขับรถประจำทางหลวงสายสองว่า อยากวิงวอนให้ใช้ความรอบคอบอย่าหลงเชื่อคำชักจูงหรือปลุกระดมของพวกหัวรุนแรงจากทางการไฟฟ้า'))
-#end = time.time()
-#print('colloc',end - start)
-
-
-#start = time.time()
-#print(word_segment('นายกรัฐมนตรีกล่าวกับคนขับรถประจำทางหลวงสายสองว่า อยากวิงวอนให้ใช้ความรอบคอบอย่าหลงเชื่อคำชักจูงหรือปลุกระดมของพวกหัวรุนแรงจากทางการไฟฟ้า','ngram'))
-#end = time.time()
-#print('ngram',end - start)
-
-#start = time.time()
-#print(word_segment('นายกรัฐมนตรีกล่าวกับคนขับรถประจำทางหลวงสายสองว่า อยากวิงวอนให้ใช้ความรอบคอบอย่าหลงเชื่อคำชักจูงหรือปลุกระดมของพวกหัวรุนแรงจากทางการไฟฟ้า','ngram',spellchk='yes'))
-#end = time.time()
-#print('ngram+spellchk',end - start)
-
-#start = time.time()
-#print(word_segment('นายกรัฐมนตรีกล่าวกับคนขับรถประจำทางหลวงสายสองว่า อยากวิงวอนให้ใช้ความรอบคอบอย่าหลงเชื่อคำชักจูงหรือปลุกระดมของพวกหัวรุนแรงจากทางการไฟฟ้า','mm'))
-#end = time.time()
-#print('colloc',end - start)
-
-#print(word_segment('โปรแกรมสำหรับประมวลผลภาษาไทย'))
-#print(word_segment('ผู้สือข่าวรายงานว่านายกรัฐนตรีไม่มาทำงานที่ทำเนียบรัฐบาล',method='ngram',spellchk='yes'))
-#print(word_segment('ผู้สือข่าวรายงานว่านายกรัฐนตรีไม่มาทำงานที่ทำเนียบรัฐบาล',method='mm'))
-
-#xx = g2p_all("ทดลองทำการ")
-#print(xx)
-#xx = g2p('กระทรวงวัฒนธร')
-#print(xx)
-#xx = g2p("สถาบันอุดมศึกษาเสาร์นี้ไม่สามารถก้าวให้ทันการเปลี่ยนแปลงวันจันทร์ของตลาดแรงงาน")
-#print(xx)
-#xx = word_segment("สถาบันอุดมศึกษาเสาร์นี้ไม่สามารถก้าวให้ทันการเปลี่ยนแปลงวันจันทร์ของตลาดแรงงาน")
-#print(xx)
-#xx = th2roman('คือเขาเดินเลยลงไปรอในแม่น้ำสะอาดไปหามะปราง')
-#print(xx)
-
-#xx= word_segment_nbest('คนขับรถประจำทางหลวง',10)
-#print(xx)
-
-#print(syl_segment('นายกรัฐมนตรีกล่าวกับคนขับรถประจำทางหลวงสายสองว่า อยากวิงวอนให้ใช้ความรอบคอบอย่าหลงเชื่อคำชักจูงหรือปลุกระดมของพวกหัวรุนแรงจากทางการไฟฟ้า'))
-
-#print(word_segment('นายกรัฐมนตรีกล่าวกับคนขับรถประจำทางหลวงสายสองว่า อยากวิงวอนให้ใช้ความรอบคอบอย่าหลงเชื่อคำชักจูงหรือปลุกระดมของพวกหัวรุนแรงจากทางการไฟฟ้า'))
