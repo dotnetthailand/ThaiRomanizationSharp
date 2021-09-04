@@ -98,43 +98,43 @@ def edits2(word):
 ##########################################################################
 ## POS tagging using nltk.tag.perceptron
 #########################################################################
-def pos_tag(Input,Option="colloc"):
-    global tagger
-    results = []
-    if Option == 'mm':
-        out = word_segment(Input,"mm")
-    elif Option == 'ngram':    
-        out = word_segment(Input,"ngram")
-    else: 
-        out = word_segment(Input)
-    try:
-      tagger
-    except NameError:
-      pos_load()
-#    print('worsseg in pos tag',out)
-    for x in out.split('<s/>'):
-        tag_result = []
-        if x != '':
-            sent = x.split('|')
-            if '' in sent:
-                sent.remove('')
-            for (w,pos) in tagger.tag(sent):
-                if w == ' ':
-                    w = '<s/>'
-                pos = change_tag(w,pos)
-                tag_result.append((w,pos))
-            tag_result.append(('<s/>','PUNCT'))    
-            results.append(tag_result)
-    return(results)
+# def pos_tag(Input,Option="colloc"):
+#     global tagger
+#     results = []
+#     if Option == 'mm':
+#         out = word_segment(Input,"mm")
+#     elif Option == 'ngram':    
+#         out = word_segment(Input,"ngram")
+#     else: 
+#         out = word_segment(Input)
+#     try:
+#       tagger
+#     except NameError:
+#       pos_load()
+# #    print('worsseg in pos tag',out)
+#     for x in out.split('<s/>'):
+#         tag_result = []
+#         if x != '':
+#             sent = x.split('|')
+#             if '' in sent:
+#                 sent.remove('')
+#             for (w,pos) in tagger.tag(sent):
+#                 if w == ' ':
+#                     w = '<s/>'
+#                 pos = change_tag(w,pos)
+#                 tag_result.append((w,pos))
+#             tag_result.append(('<s/>','PUNCT'))    
+#             results.append(tag_result)
+#     return(results)
 
 ## pos tag on a list of words  [w1,w2,w3,...]
-def pos_tag_wordlist(sent):
-    global tagger
-    results = []
-    for (w,pos) in tagger.tag(sent):
-        pos = change_tag(w,pos)
-        results.append((w,pos))    
-    return(results)
+# def pos_tag_wordlist(sent):
+#     global tagger
+#     results = []
+#     for (w,pos) in tagger.tag(sent):
+#         pos = change_tag(w,pos)
+#         results.append((w,pos))    
+#     return(results)
 
 def pos_load():
     global tagger
@@ -164,61 +164,61 @@ def change_tag(w,pos):
 ### chunk parse  =  segment edu + word segment + pos tag + (ner)
 ### Input = Thai text
 ###
-def chunk(txt):
-    global SegSep
-    global SSegSep
-    global useg_model
-    global tagger
-    outs = ""
-    out = ""
-#    print(txt)
-    ## do syllable segmentation
-    sylseg = syl_segment(txt)
-    sylseg = re.sub(' ','<s/>',sylseg)
-    sylseg = re.sub(r'([^~])<s/>',r'\1~<s/>',sylseg)
-    sylseg = re.sub(r'<s/>([^~])',r'<s/>~\1',sylseg)
+# def chunk(txt):
+#     global SegSep
+#     global SSegSep
+#     global useg_model
+#     global tagger
+#     outs = ""
+#     out = ""
+# #    print(txt)
+#     ## do syllable segmentation
+#     sylseg = syl_segment(txt)
+#     sylseg = re.sub(' ','<s/>',sylseg)
+#     sylseg = re.sub(r'([^~])<s/>',r'\1~<s/>',sylseg)
+#     sylseg = re.sub(r'<s/>([^~])',r'<s/>~\1',sylseg)
 
-    sylcopy = sylseg
-    sylcopy = re.sub(r'~[0-9\.\,]+~','~DIGIT~',sylcopy)
-    sylcopy = re.sub(r'~[a-zA-Z0-9\\\/\?\'\"\(\)\.]+~','~FOREIGN~',sylcopy)
+#     sylcopy = sylseg
+#     sylcopy = re.sub(r'~[0-9\.\,]+~','~DIGIT~',sylcopy)
+#     sylcopy = re.sub(r'~[a-zA-Z0-9\\\/\?\'\"\(\)\.]+~','~FOREIGN~',sylcopy)
 
-    parcopy = sylcopy.split('~')
-    par = sylseg.split('~')
-#    print(sylcopy)
-    ## do edu segmentation
-    try:
-      useg_model
-    except NameError:
-      useg_model_load()
+#     parcopy = sylcopy.split('~')
+#     par = sylseg.split('~')
+# #    print(sylcopy)
+#     ## do edu segmentation
+#     try:
+#       useg_model
+#     except NameError:
+#       useg_model_load()
 
-    tags = useg_model.predict([features(parcopy, index) for index in range(len(par))])
-    lst_tag = zip(par,tags)
-    syl_seq = ''
-    for (w,t) in lst_tag:
-        if t == '<u/>':
-            ## do word segmentation
-            out = wordseg_colloc(syl_seq)
-            ## do pos tagging
-            try:
-              tagger
-            except NameError:
-              pos_load()        
-            tag_result = []
-            if out != '':
-                sent = out.split('|')
-                ## remove all '' from sent
-                sent = list(filter(lambda a: a != '', sent))
-                for (w,pos) in tagger.tag(sent):
-                    pos = change_tag(w,pos)
-                    ## do ner tagging
-                    tag_result.append((w,pos))
-                out = pack_ner(ner(tag_result))
-                outs += out
-            syl_seq = ''
-            outs += '<u/>'
-        else:
-            syl_seq += w+'~'
-    return(outs)
+#     tags = useg_model.predict([features(parcopy, index) for index in range(len(par))])
+#     lst_tag = zip(par,tags)
+#     syl_seq = ''
+#     for (w,t) in lst_tag:
+#         if t == '<u/>':
+#             ## do word segmentation
+#             out = wordseg_colloc(syl_seq)
+#             ## do pos tagging
+#             try:
+#               tagger
+#             except NameError:
+#               pos_load()        
+#             tag_result = []
+#             if out != '':
+#                 sent = out.split('|')
+#                 ## remove all '' from sent
+#                 sent = list(filter(lambda a: a != '', sent))
+#                 for (w,pos) in tagger.tag(sent):
+#                     pos = change_tag(w,pos)
+#                     ## do ner tagging
+#                     tag_result.append((w,pos))
+#                 out = pack_ner(ner(tag_result))
+#                 outs += out
+#             syl_seq = ''
+#             outs += '<u/>'
+#         else:
+#             syl_seq += w+'~'
+#     return(outs)
     
 
 ###################################################################################
@@ -472,25 +472,25 @@ def g2p(Input):
     return(output)        
 
 ## return all transcriptions based on syllable parse
-def g2p_all(inp):
-    output = []
-    NORMALIZE_IPA = [ ('O', '\u1D10'), ('x', '\u025B'), ('@', '\u0264'), ('N', '\u014B'), ('?', '\u0294'),('U','\u026F'),('|',' '),('~','.'),('^','.'),("'",'.'),('4','5'), ('3','4'), ('2','3'), ('1','2'), ('0','1')]
+# def g2p_all(inp):
+#     output = []
+#     NORMALIZE_IPA = [ ('O', '\u1D10'), ('x', '\u025B'), ('@', '\u0264'), ('N', '\u014B'), ('?', '\u0294'),('U','\u026F'),('|',' '),('~','.'),('^','.'),("'",'.'),('4','5'), ('3','4'), ('2','3'), ('1','2'), ('0','1')]
     
-    if inp == '': return([])            
-    objMatch = re.match(r"[^ก-์]+$",inp)
-    if objMatch:
-        output = [(inp,inp)]
-    else:
-        lst = sylparse_all(inp)
-        if lst == []: return([('','')])
-        for (th,tran) in lst:
-            tran = re.sub(r"([aeiouUxO@])\1",r"\1ː",tran)
-            tran = re.sub(r"([ptkc])h",r"\1ʰ",tran)
-            for k, v in NORMALIZE_IPA:
-                tran = tran.replace(k, v)
-            output.append((th,tran))
-#            print(th,tran)
-    return(output)        
+#     if inp == '': return([])            
+#     objMatch = re.match(r"[^ก-์]+$",inp)
+#     if objMatch:
+#         output = [(inp,inp)]
+#     else:
+#         lst = sylparse_all(inp)
+#         if lst == []: return([('','')])
+#         for (th,tran) in lst:
+#             tran = re.sub(r"([aeiouUxO@])\1",r"\1ː",tran)
+#             tran = re.sub(r"([ptkc])h",r"\1ʰ",tran)
+#             for k, v in NORMALIZE_IPA:
+#                 tran = tran.replace(k, v)
+#             output.append((th,tran))
+# #            print(th,tran)
+#     return(output)        
 
 
 #############################################################################################################
@@ -570,89 +570,89 @@ def sylparse(Input):
     else:
         return('<Fail>'+Input+'</Fail>')
 
-def sylparse_all(Input):
-    global SylSep
-    global PRON
-    global PRONUN
+# def sylparse_all(Input):
+#     global SylSep
+#     global PRON
+#     global PRONUN
     
-    PRONUN = defaultdict(list)
-    phchart = defaultdict(dict)
-    schartx = {}
-    phchart.clear()
-    tmp = []
+#     PRONUN = defaultdict(list)
+#     phchart = defaultdict(dict)
+#     schartx = {}
+#     phchart.clear()
+#     tmp = []
     
-    EndOfInput = len(Input)
-    for f in PRON:
-        if f == '([ก-ฮ])' and PRON[f] == 'XOO': continue
-        for i in range(EndOfInput):
-            Inx = Input[i:]
-            matchObj = re.match(f,Inx)
-            if matchObj:
-                keymatch = matchObj.group()
-                try:
-                    matchObj.group(3)
-                    charmatch = matchObj.group(1) + ' ' + matchObj.group(2) + ' ' + matchObj.group(3)
-                except IndexError:
-                    try:
-                        matchObj.group(2)
-                        charmatch = matchObj.group(1) + ' ' + matchObj.group(2) 
-                    except IndexError:
-                        try:
-                            matchObj.group(1)
-                            charmatch = matchObj.group(1) 
-                        except IndexError:
-                            PRONUN[matchObj.group()].append(PRON[f])
-                k=i+len(matchObj.group())
-                frm = matchObj.group()
-                codematch = PRON[f]
-                codematch = re.sub(r"[^AKYDZCRX]","",codematch)
-                if codematch:
-#                    print("code char",codematch,charmatch)            
-                    phone = ReplaceSnd(PRON[f],codematch,charmatch)
-                    if  NotExceptionSyl(codematch,charmatch,keymatch,phone):
-                        (phone,tone) = ToneAssign(keymatch,phone,codematch,charmatch)
-                        if (tone < '5'): phone = re.sub(r'8',tone,phone)          
-                        (keymatch,phone) = TransformSyl(keymatch,phone)
-#                        phchart[0][k] = {frm+'/'+phone:1}
-                        if k not in phchart[i]:
-                            phchart[i][k] = {frm+'/'+phone:1}
-                        else:
-                            phchart[i][k].update({frm+'/'+phone:1})
-#                        print(i,k,frm,phone)     
-                        if  re.match(r'ทร',keymatch)  and  re.match(r"thr",phone):            #### gen more syllable  ทร   thr => s
-                            phone=re.sub(r"thr","s",phone) 
-#                            PRONUN[''.join(schart[i][k])].append(phone)
-                        if k not in phchart[i]:
-                            phchart[i][k] = {frm+'/'+phone:1}
-                        else:
-                            phchart[i][k].update({frm+'/'+phone:1})
+#     EndOfInput = len(Input)
+#     for f in PRON:
+#         if f == '([ก-ฮ])' and PRON[f] == 'XOO': continue
+#         for i in range(EndOfInput):
+#             Inx = Input[i:]
+#             matchObj = re.match(f,Inx)
+#             if matchObj:
+#                 keymatch = matchObj.group()
+#                 try:
+#                     matchObj.group(3)
+#                     charmatch = matchObj.group(1) + ' ' + matchObj.group(2) + ' ' + matchObj.group(3)
+#                 except IndexError:
+#                     try:
+#                         matchObj.group(2)
+#                         charmatch = matchObj.group(1) + ' ' + matchObj.group(2) 
+#                     except IndexError:
+#                         try:
+#                             matchObj.group(1)
+#                             charmatch = matchObj.group(1) 
+#                         except IndexError:
+#                             PRONUN[matchObj.group()].append(PRON[f])
+#                 k=i+len(matchObj.group())
+#                 frm = matchObj.group()
+#                 codematch = PRON[f]
+#                 codematch = re.sub(r"[^AKYDZCRX]","",codematch)
+#                 if codematch:
+# #                    print("code char",codematch,charmatch)            
+#                     phone = ReplaceSnd(PRON[f],codematch,charmatch)
+#                     if  NotExceptionSyl(codematch,charmatch,keymatch,phone):
+#                         (phone,tone) = ToneAssign(keymatch,phone,codematch,charmatch)
+#                         if (tone < '5'): phone = re.sub(r'8',tone,phone)          
+#                         (keymatch,phone) = TransformSyl(keymatch,phone)
+# #                        phchart[0][k] = {frm+'/'+phone:1}
+#                         if k not in phchart[i]:
+#                             phchart[i][k] = {frm+'/'+phone:1}
+#                         else:
+#                             phchart[i][k].update({frm+'/'+phone:1})
+# #                        print(i,k,frm,phone)     
+#                         if  re.match(r'ทร',keymatch)  and  re.match(r"thr",phone):            #### gen more syllable  ทร   thr => s
+#                             phone=re.sub(r"thr","s",phone) 
+# #                            PRONUN[''.join(schart[i][k])].append(phone)
+#                         if k not in phchart[i]:
+#                             phchart[i][k] = {frm+'/'+phone:1}
+#                         else:
+#                             phchart[i][k].update({frm+'/'+phone:1})
     
-    for j in range(EndOfInput):
-        schartx = deepcopy(phchart)
-        if j in phchart[0]:
-            for s1 in phchart[0][j]:
-                for k in phchart[j]:
-                    for s2 in phchart[j][k]:
-    #                    tmp = mergekaran1(s1+s2)
-                        tmp = s1+'~'+s2
-                        if k not in schartx[0]:
-                            schartx[0][k] = {tmp:1}
-                        else:
-                            schartx[0][k].update({tmp:1})
-        phchart = deepcopy(schartx)
+#     for j in range(EndOfInput):
+#         schartx = deepcopy(phchart)
+#         if j in phchart[0]:
+#             for s1 in phchart[0][j]:
+#                 for k in phchart[j]:
+#                     for s2 in phchart[j][k]:
+#     #                    tmp = mergekaran1(s1+s2)
+#                         tmp = s1+'~'+s2
+#                         if k not in schartx[0]:
+#                             schartx[0][k] = {tmp:1}
+#                         else:
+#                             schartx[0][k].update({tmp:1})
+#         phchart = deepcopy(schartx)
         
-    outlst = []
-    if EndOfInput not in phchart[0]: return([])
-    for out in phchart[0][EndOfInput]:
-        form = []
-        ph = []
-        for x in out.split('~'):
-            (f,p) = x.split('/')
-            form.append(f)
-            ph.append(p)
-        outlst.append(('~'.join(form),'~'.join(ph)))
-#        print(form,ph)
-    return(outlst)    
+#     outlst = []
+#     if EndOfInput not in phchart[0]: return([])
+#     for out in phchart[0][EndOfInput]:
+#         form = []
+#         ph = []
+#         for x in out.split('~'):
+#             (f,p) = x.split('/')
+#             form.append(f)
+#             ph.append(p)
+#         outlst.append(('~'.join(form),'~'.join(ph)))
+# #        print(form,ph)
+#     return(outlst)    
 
 def ReplaceSnd(phone,codematch,charmatch):
      global stable
@@ -988,19 +988,19 @@ def read_PhSTrigram(File):
         FrmSUnigram[x2] += float(ct)
     IFile.close()
     
-def th2ipa(txt):
-    out = ''
-    NORMALIZE_IPA = [ ('O', '\u1D10'), ('x', '\u025B'), ('@', '\u0264'), ('N', '\u014B'), ('?', '\u0294'),('U','\u026F'),('|',' '),('~','.'),('^','.'),("'",'.'),('4','5'), ('3','4'), ('2','3'), ('1','2'), ('0','1')]
-    inx = g2p(txt)
-    for seg in inx.split('<s/>'):
-        if seg == '': continue
-        (th, tran) = seg.split('<tr/>')
-        tran = re.sub(r"([aeiouUxO@])\1",r"\1ː",tran)
-        tran = re.sub(r"([ptkc])h",r"\1ʰ",tran)
-        for k, v in NORMALIZE_IPA:
-            tran = tran.replace(k, v)
-        out += tran+'<s/>'
-    return(out)
+# def th2ipa(txt):
+#     out = ''
+#     NORMALIZE_IPA = [ ('O', '\u1D10'), ('x', '\u025B'), ('@', '\u0264'), ('N', '\u014B'), ('?', '\u0294'),('U','\u026F'),('|',' '),('~','.'),('^','.'),("'",'.'),('4','5'), ('3','4'), ('2','3'), ('1','2'), ('0','1')]
+#     inx = g2p(txt)
+#     for seg in inx.split('<s/>'):
+#         if seg == '': continue
+#         (th, tran) = seg.split('<tr/>')
+#         tran = re.sub(r"([aeiouUxO@])\1",r"\1ː",tran)
+#         tran = re.sub(r"([ptkc])h",r"\1ʰ",tran)
+#         for k, v in NORMALIZE_IPA:
+#             tran = tran.replace(k, v)
+#         out += tran+'<s/>'
+#     return(out)
 
 def th2roman(txt):
     out = ''
@@ -1026,30 +1026,30 @@ def th2roman(txt):
 #############################################################################################################
 ###  Word Segmentation for Thai texts
 ### Input = a paragraph of Thai texts
-def word_segmentX(Input):
-    global SegSep
-    global SSegSep
-    output = ""
-    out = ""
+# def word_segmentX(Input):
+#     global SegSep
+#     global SSegSep
+#     output = ""
+#     out = ""
     
-    Input = preprocess(Input)
-    sentLst = Input.split(SegSep)
-    for s in sentLst:
-#        print "s:",s
-        inLst = s.split(SSegSep)
-        for inp in inLst:
-            if inp == '': continue            
-#            print "inp:",inp
-#            objMatch = re.match(r"[a-zA-Z0-9\-\_\+\=\(\)\*\&\^\%\$\#\@\!\~\{\}\[\]\'\"\:\;\<\>\?\/\\\. ]+",inp)
-            objMatch = re.match(r"[^ก-์]+",inp)
-            if objMatch:
-                out = inp
-            else:
-                y = sylseg(inp)
-                out = wordseg(y)
-            output = output+out+WordSep
-        output = output+'<s/>'    ####write <s/> output for SegSep   
-    return(output)        
+#     Input = preprocess(Input)
+#     sentLst = Input.split(SegSep)
+#     for s in sentLst:
+# #        print "s:",s
+#         inLst = s.split(SSegSep)
+#         for inp in inLst:
+#             if inp == '': continue            
+# #            print "inp:",inp
+# #            objMatch = re.match(r"[a-zA-Z0-9\-\_\+\=\(\)\*\&\^\%\$\#\@\!\~\{\}\[\]\'\"\:\;\<\>\?\/\\\. ]+",inp)
+#             objMatch = re.match(r"[^ก-์]+",inp)
+#             if objMatch:
+#                 out = inp
+#             else:
+#                 y = sylseg(inp)
+#                 out = wordseg(y)
+#             output = output+out+WordSep
+#         output = output+'<s/>'    ####write <s/> output for SegSep   
+#     return(output)        
 
 
 
@@ -1115,62 +1115,62 @@ def wordseg_colloc(Input):
 #### If input is a multiple chunks of text, the output is the list of chunks' outputs.
 #### e.g. [ [c1seg1, c1seg2, c1seg3, c1seg4, .... ] , [c2seg1, c2seg2, c2seg3, c2seg4, .... ] ]
 ######################################################################
-def word_segment_nbest(Input,nbest):
-    global SegSep
-    global SSegSep
-    output = []
-    out = []
+# def word_segment_nbest(Input,nbest):
+#     global SegSep
+#     global SSegSep
+#     output = []
+#     out = []
     
-    Input = preprocess(Input)
-    sentLst = Input.split(SegSep)
-    for s in sentLst:
-        inLst = s.split(SSegSep)
-        for inp in inLst:
-            if inp == '': continue            
-            objMatch = re.match(r"[^ก-์]+",inp)  ## not Thai text
-            if objMatch:
-                out = [inp]
-            else:
-                out = wordsegmm_bn(inp,nbest)
-            output.append(out)    
-    return(output)
+#     Input = preprocess(Input)
+#     sentLst = Input.split(SegSep)
+#     for s in sentLst:
+#         inLst = s.split(SSegSep)
+#         for inp in inLst:
+#             if inp == '': continue            
+#             objMatch = re.match(r"[^ก-์]+",inp)  ## not Thai text
+#             if objMatch:
+#                 out = [inp]
+#             else:
+#                 out = wordsegmm_bn(inp,nbest)
+#             output.append(out)    
+#     return(output)
 
-def wordsegmm_bn(Input,nbest):    
-    global TDICT
-    global EndOfSent
-    global chartnb
-    global SegSep
-    global WordSep
+# def wordsegmm_bn(Input,nbest):    
+#     global TDICT
+#     global EndOfSent
+#     global chartnb
+#     global SegSep
+#     global WordSep
 
 
-    part = []
-    chartnb = defaultdict(dict)
-    outx = []
-    chartnb.clear()
+#     part = []
+#     chartnb = defaultdict(dict)
+#     outx = []
+#     chartnb.clear()
     
-    part = Input.split(SegSep)
-    for inx in part:
-        SylLst = list(inx)
-        EndOfSent = len(SylLst)
-        ## look for all possible words in the string input
-        for i in range(EndOfSent):
-            for j in range(i,EndOfSent+1):
-                wrd = ''.join(SylLst[i:j])
-                if wrd in TDICT and wrd != '':
-#                    print('wrd',wrd,i,j,SylLst[i:j])
-                    chartnb[(i,j)][wrd] = 1
-        ## chart parse            
-        if chartparse_mm_bn():
-            i = 1
-            for seg1 in sorted(chartnb[(0,EndOfSent)], key=chartnb[(0,EndOfSent)].get):
-#                print(i,seg1)
-                outx.append(seg1)
-                i += 1
-                if i > nbest:
-                    break     
-        else:
-            outx += ["<Fail>"+Input+"</Fail>"]
-    return(outx)        
+#     part = Input.split(SegSep)
+#     for inx in part:
+#         SylLst = list(inx)
+#         EndOfSent = len(SylLst)
+#         ## look for all possible words in the string input
+#         for i in range(EndOfSent):
+#             for j in range(i,EndOfSent+1):
+#                 wrd = ''.join(SylLst[i:j])
+#                 if wrd in TDICT and wrd != '':
+# #                    print('wrd',wrd,i,j,SylLst[i:j])
+#                     chartnb[(i,j)][wrd] = 1
+#         ## chart parse            
+#         if chartparse_mm_bn():
+#             i = 1
+#             for seg1 in sorted(chartnb[(0,EndOfSent)], key=chartnb[(0,EndOfSent)].get):
+# #                print(i,seg1)
+#                 outx.append(seg1)
+#                 i += 1
+#                 if i > nbest:
+#                     break     
+#         else:
+#             outx += ["<Fail>"+Input+"</Fail>"]
+#     return(outx)        
 
 
 def chartparse_mm_bn():
