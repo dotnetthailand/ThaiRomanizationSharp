@@ -34,7 +34,6 @@ namespace ThaiLanguageToolkit
             // Use pythonnet from that installation
             PythonEngine.Initialize();
 
-
             dynamic os = Py.Import("os");
             dynamic sys = Py.Import("sys");
             sys.path.append(os.getcwd());

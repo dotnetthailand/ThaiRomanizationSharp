@@ -5,3 +5,5 @@ obj
 # Ignore embedded PYthon
 python*
 __pycache__
+
+.vs
