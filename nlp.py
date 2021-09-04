@@ -376,7 +376,6 @@ def ReplaceSnd(phone,codematch,charmatch):
           snd = re.sub(x,s,snd)
           i += 1 
      snd += '8'
-#     print('Sound',snd)
      return(snd)
 
 def NotExceptionSyl(codematch,charmatch,form,phone):
@@ -430,7 +429,6 @@ def ToneAssign(keymatch,phone,codematch,charmatch):
             final = ''
 
     deadsyll = DeadSyl(phone)
-#    print('dead syallble',phone,deadsyll,lead,init,final)
 
 ### change + for leading syllable
     if "+'" in phone:
@@ -667,39 +665,6 @@ def ProbPhone(p,pw,w,nw):
     prob =  0.8 * p3 + 0.16 * p2 + 0.03 * p1 + .00000000001
     return(prob)
         
-def read_PhSTrigram(File):
-    global PhSTrigram
-    global FrmSTrigram
-    global PhSBigram
-    global FrmSBigram
-    global PhSUnigram
-    global FrmSUnigram
-    
-    PhSTrigram = defaultdict(float)
-    FrmSTrigram = defaultdict(float)
-    PhSBigram = defaultdict(float)
-    FrmSBigram = defaultdict(float)
-    PhSUnigram = defaultdict(float)
-    FrmSUnigram = defaultdict(float)
-    
-    IFile = open(File,'r',encoding='cp874')
-    for line in IFile.readlines():
-        line = line.rstrip()
-        line = re.sub(r"<w>","|",line)
-        (x, ct) = line.split('\t')
-        (fs,p) = x.split('/')
-        (x1,x2,x3) = fs.split('-')
-#        print('read ',x1,x2,x3,p,ct)
-        PhSTrigram[(x1,x2,x3,p)] += float(ct)
-        FrmSTrigram[(x1,x2,x3)] += float(ct)
-        PhSBigram[(x1,x2,p)] += float(ct)
-        FrmSBigram[(x1,x2)] += float(ct)
-        PhSBigram[(x2,x3,p)] += float(ct)
-        FrmSBigram[(x2,x3)] += float(ct)
-        PhSUnigram[(x2,p)] += float(ct)
-        FrmSUnigram[x2] += float(ct)
-    IFile.close()
-    
 def th2roman(txt):
     out = ''
     NORMALIZE_ROM = [ ('O', 'o'), ('x', 'ae'), ('@', 'oe'), ('N', 'ng'), ('U','ue'), ('?',''), ('|',' '), ('~','-'),('^','-'),("'",'-')]
@@ -719,60 +684,6 @@ def th2roman(txt):
     
 ### end of modules used in g2p  ###############    
 ###################################################################
-###### Thai word segmentation using maximum collocation approach
-###### Input is a list of syllables
-###### also add each syllable as a potential word
-def wordseg_colloc(Input):
-    global TDICT
-    global EndOfSent
-    global chart
-    global SegSep
-    global WordSep
-    global CollocSt
-    
-    part = []
-    chart = defaultdict(dict)
-    SylSep = '~'
-    outx = ""
-    chart.clear()
-    CollocSt = defaultdict(float)
-    
-    part = Input.split(SegSep)
-    for inx in part:
-        SylLst = syl_segment(inx).split('~')
-        if SylLst[-1] == '<s/>': SylLst.pop()
-#        SylLst = inx.split(SylSep)
-        EndOfSent = len(SylLst)
-        ######### Gen unknown word by set each syllable as a potential word
-#        gen_unknown_thaiw(SylLst)
-        for i in range(EndOfSent):
-            chart[i][i+1] = [SylLst[i]]
-        eng_abbr(SylLst)    
-        ############################################################
-        for i in range(EndOfSent):
-            for j in range(i,EndOfSent+1):
-                wrd = ''.join(SylLst[i:j])
-                if wrd in TDICT:
-                    chart[i][j] = [wrd]
-                    if j > i+1:   ### more than one syllable, compute St
-                        St = 0.0
-                        NoOfSyl = len(SylLst[i:j])
-                        for ii in range(i,j-1):
-                            St += compute_colloc("mi",SylLst[ii],SylLst[ii+1])
-#                            print (SylLst[ii],SylLst[ii+1],xx)
-                        CollocSt[(i,j)] = St    #### Compute STrength of the word
-#                        print(i,j,wrd,CollocSt[(i,j)])
-                    else:   ### one sylable word St = 0
-                        CollocSt[(i,j)] = 0.0
-        if chart_parse():
-#            return(chart[0][EndOfSent])
-            outx += WordSep.join(chart[0][EndOfSent])
-            return(outx)
-        else:
-            return("<Fail>"+Input+"</Fail>")
-        
-
-####################################################################
     
 def chartparse_mm_bn():
     global chartnb
@@ -799,78 +710,6 @@ def chartparse_mm_bn():
 #### Input = Thai string,  method = colloc|ngram|mm , 
 ####   spellchk=yes|no 
 ######################################################################
-def word_segment(Input,method='colloc',spellchk='no'):
-    global SegSep
-    global SSegSep
-    output = ""
-    out = ""
-    
-    Input = preprocess(Input)
-    sentLst = Input.split(SegSep)
-    for s in sentLst:
-#        print "s:",s
-        inLst = s.split(SSegSep)
-        for inp in inLst:
-            if inp == '': continue            
-            objMatch = re.match(r"[^ก-์]+",inp)
-            if objMatch:
-                out = inp
-            else:
-                if method == 'mm':
-                    out = wordseg_mm(inp,method,spellchk)
-                elif method == 'colloc':
-                    out =wordseg_colloc(inp)
-                elif method == 'ngram':
-                    out =wordseg_mm(inp,method,spellchk)        
-            output = output+out+WordSep
-#        output = output.rstrip(WordSep)
-        output = output+'<s/>'    ####write <s/> output for SegSep   
-    return(output)
-
-def word_segment_mm(Input):
-    return(word_segment(Input,method='mm'))
-
-def wordseg_mm(Input,method,spellchk):    
-    global TDICT
-    global EndOfSent
-    global chart
-    global SegSep
-    global WordSep
-
-    part = []
-    chart = defaultdict(dict)
-    outx = ""
-    chart.clear()
-    
-    part = Input.split(SegSep)
-    for inx in part:
-        if method == 'ngram':
-            SylLst = syl_segment(inx).split('~')
-            SylLst.pop()
-#            print('syl',SylLst)
-        else:
-            SylLst = list(inx)
-        EndOfSent = len(SylLst)    
-        if spellchk == 'yes' and method == 'ngram':            
-            gen_unknown_thaiw(SylLst)
-        eng_abbr(SylLst)    
-        for i in range(EndOfSent):
-            for j in range(i,EndOfSent+1):
-                wrd = ''.join(SylLst[i:j])
-                if wrd in TDICT:
-                    chart[i][j] = [wrd]
-                    
-        if method == 'ngram':            
-            if chartparse_ngram():
-                outx += WordSep.join(chart[0][EndOfSent])
-            else:
-                outx += "<Fail>"+Input+"</Fail>"
-        elif method == 'mm':        
-            if chartparse_mm():
-                outx += WordSep.join(chart[0][EndOfSent])
-            else:
-                outx += "<Fail>"+Input+"</Fail>"
-    return(outx)        
 
 #########  Chart Parsing, ceate a new edge from two connected edges, always start from 0 to connect {0-j} + {j+k}
 #########  If minimal word appraoch is chosen, the sequence with fewest words will be selected
