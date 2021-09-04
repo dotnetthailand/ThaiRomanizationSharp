@@ -617,83 +617,6 @@ def chart_parse():
         return(0)
 
 #############################################################################################################
-###  Syllable Segmentation for Thai texts
-### Input = a paragraph of Thai texts
-def syl_segment(Input):
-    global SegSep
-    global SSegSep
-    output = ""
-    out = ""
-    
-    Input = preprocess(Input)
-    sentLst = Input.split(SegSep)
-    for s in sentLst:
-#        print "s:",s
-        inLst = s.split(SSegSep)
-        for inp in inLst:
-            if inp == '': continue            
-            objMatch = re.match(r"[^ก-์]+",inp)
-            if objMatch:
-                out = inp
-            else:
-                out = sylseg(inp)
-            output = output+out+SylSep
-#        output = output.rstrip(SylSep)
-        output = output+'<s/>'    ####write <s/> output for SegSep   
-    return(output)        
-
-#############################################################################################################
-####### Segment syllable using trigram statistics, only strings matched with a defined syllable pattern will be created
-####  Input = Thai string
-def sylseg(Input):
-    global SylSep
-    global PRON
-    
-    schart = defaultdict(dict)
-    probEnd = defaultdict(float)
-    schartx = {}
-    schart.clear()
-    probEnd.clear()
-    tmp = []
-    
-    EndOfInput = len(Input)
-    for f in PRON:
-        for i in range(EndOfInput):
-            Inx = Input[i:]
-            matchObj = re.match(f,Inx)
-            if matchObj:
-                k=i+len(matchObj.group())
-                schart[i][k] = [matchObj.group()]
-                probEnd[(i,k)] = prob_trisyl([matchObj.group()])
-#                print("match",i,k, matchObj.group(),f,probEnd[(i,k)])
-    
-    for j in range(EndOfInput):
-        schartx = deepcopy(schart)
-        if j in schart[0]:
-            s1 = schart[0][j]
-            for k in schart[j]:
-                    s2 = schart[j][k]
-                    ####****** change this to merge only form, need to do this, otherwise probtrisyl is not correct.
-                    tmp = mergekaran(s1+s2)
-                    if k not in schart[0]:                        
-#                        schartx[0][k] = s1+s2
-#                        probEnd[k] = prob_trisyl(s1+s2)
-                        schartx[0][k] = tmp
-                        probEnd[(0,k)] = prob_trisyl(tmp)
-#                        print("new",tmp,probEnd[k])
-                    else:
-#                        p = prob_trisyl(s1+s2)
-                        p = prob_trisyl(tmp)
-                        if p > probEnd[(0,k)]:
-#                            print("replace",tmp,p,probEnd[(0,k)])
-#                            schartx[0][k] = s1+s2 
-                            schartx[0][k] = tmp 
-                            probEnd[(0,k)] = p
-        schart = deepcopy(schartx)
-    if EndOfInput in schart[0]:    
-        return(SylSep.join(schart[0][EndOfInput]))
-    else:
-        return('<Fail>'+Input+'</Fail>')
 
 ######################
 def mergekaran(Lst):
@@ -822,8 +745,6 @@ def prob_wb(w,pw1,pw2):
 
     return(p)
 
-    
-
 ########## Preprocess Thai texts  #### adding SegSep and <s> for speocal 
 def preprocess(input):
     global SegSep
@@ -898,12 +819,7 @@ def initial():
     
 #    try:
 #        ATA_PATH = pkg_resources.resource_filename('tltk', '/')
-    
-    read_sylpattern(ATA_PATH + '/sylrule.lts')
-    read_syldict(ATA_PATH +  '/thaisyl.dict')
-    read_stat(ATA_PATH + '/sylseg.3g')
-    read_thdict(ATA_PATH +  '/thdict')
-    read_PhSTrigram(ATA_PATH +  '/PhSTrigram.sts')
+
 
     return(1)
 
