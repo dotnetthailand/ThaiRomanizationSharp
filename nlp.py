@@ -20,6 +20,14 @@ from copy import deepcopy
 from collections import defaultdict
 import pickle
 
+##########################################################
+## Read Dictionary in a text format one word per one line
+##########################################################
+def read_thdict(Filename):
+    global TDICT
+    fileObject = open(Filename,'rb')  
+    TDICT = pickle.load(fileObject)
+
 ####################################################################
 ##  spelling correction modified from Peter Norvig  http://norvig.com/spell-correct.html
 ####################################################################
@@ -659,6 +667,39 @@ def ProbPhone(p,pw,w,nw):
     prob =  0.8 * p3 + 0.16 * p2 + 0.03 * p1 + .00000000001
     return(prob)
         
+def read_PhSTrigram(File):
+    global PhSTrigram
+    global FrmSTrigram
+    global PhSBigram
+    global FrmSBigram
+    global PhSUnigram
+    global FrmSUnigram
+    
+    PhSTrigram = defaultdict(float)
+    FrmSTrigram = defaultdict(float)
+    PhSBigram = defaultdict(float)
+    FrmSBigram = defaultdict(float)
+    PhSUnigram = defaultdict(float)
+    FrmSUnigram = defaultdict(float)
+    
+    IFile = open(File,'r',encoding='cp874')
+    for line in IFile.readlines():
+        line = line.rstrip()
+        line = re.sub(r"<w>","|",line)
+        (x, ct) = line.split('\t')
+        (fs,p) = x.split('/')
+        (x1,x2,x3) = fs.split('-')
+#        print('read ',x1,x2,x3,p,ct)
+        PhSTrigram[(x1,x2,x3,p)] += float(ct)
+        FrmSTrigram[(x1,x2,x3)] += float(ct)
+        PhSBigram[(x1,x2,p)] += float(ct)
+        FrmSBigram[(x1,x2)] += float(ct)
+        PhSBigram[(x2,x3,p)] += float(ct)
+        FrmSBigram[(x2,x3)] += float(ct)
+        PhSUnigram[(x2,p)] += float(ct)
+        FrmSUnigram[x2] += float(ct)
+    IFile.close()
+    
 def th2roman(txt):
     out = ''
     NORMALIZE_ROM = [ ('O', 'o'), ('x', 'ae'), ('@', 'oe'), ('N', 'ng'), ('U','ue'), ('?',''), ('|',' '), ('~','-'),('^','-'),("'",'-')]
@@ -732,104 +773,6 @@ def wordseg_colloc(Input):
         
 
 ####################################################################
-    
-def chartparse_mm_bn():
-    global chartnb
-    global WordSep
-    
-    for j in range(EndOfSent):
-        chartx = deepcopy(chartnb)
-        if j in [ key[1] for key in chartnb if key[0] == 0 ]:
-            for s1 in chartnb[(0,j)]:  # get the first part
-                for k in [ key[1] for key in chartnb if key[0] == j ]:  # connecting paths 
-                     for s2 in chartnb[(j,k)]:  # get the second part
-                        path = s1+WordSep+s2
-                        if path not in chartnb[(0,k)]:
-                            chartx[(0,k)][path] = chartx[(0,j)][s1] + chartx[(j,k)][s2]  ## sum the number of words from s1 and s2
-#                            print("New =>",0,j,k,chartx[(0,k)])
-        chartnb = deepcopy(chartx)
-    if chartnb[(0,EndOfSent)]:
-        return(1)
-    else:
-        return(0)
-
-####################################################################
-#### Word segmentation using Maximal Matching (minimal word) approach
-#### Input = Thai string,  method = colloc|ngram|mm , 
-####   spellchk=yes|no 
-######################################################################
-def word_segment(Input,method='colloc',spellchk='no'):
-    global SegSep
-    global SSegSep
-    output = ""
-    out = ""
-    
-    Input = preprocess(Input)
-    sentLst = Input.split(SegSep)
-    for s in sentLst:
-#        print "s:",s
-        inLst = s.split(SSegSep)
-        for inp in inLst:
-            if inp == '': continue            
-            objMatch = re.match(r"[^ก-์]+",inp)
-            if objMatch:
-                out = inp
-            else:
-                if method == 'mm':
-                    out = wordseg_mm(inp,method,spellchk)
-                elif method == 'colloc':
-                    out =wordseg_colloc(inp)
-                elif method == 'ngram':
-                    out =wordseg_mm(inp,method,spellchk)        
-            output = output+out+WordSep
-#        output = output.rstrip(WordSep)
-        output = output+'<s/>'    ####write <s/> output for SegSep   
-    return(output)
-
-def word_segment_mm(Input):
-    return(word_segment(Input,method='mm'))
-
-def wordseg_mm(Input,method,spellchk):    
-    global TDICT
-    global EndOfSent
-    global chart
-    global SegSep
-    global WordSep
-
-    part = []
-    chart = defaultdict(dict)
-    outx = ""
-    chart.clear()
-    
-    part = Input.split(SegSep)
-    for inx in part:
-        if method == 'ngram':
-            SylLst = syl_segment(inx).split('~')
-            SylLst.pop()
-#            print('syl',SylLst)
-        else:
-            SylLst = list(inx)
-        EndOfSent = len(SylLst)    
-        if spellchk == 'yes' and method == 'ngram':            
-            gen_unknown_thaiw(SylLst)
-        eng_abbr(SylLst)    
-        for i in range(EndOfSent):
-            for j in range(i,EndOfSent+1):
-                wrd = ''.join(SylLst[i:j])
-                if wrd in TDICT:
-                    chart[i][j] = [wrd]
-                    
-        if method == 'ngram':            
-            if chartparse_ngram():
-                outx += WordSep.join(chart[0][EndOfSent])
-            else:
-                outx += "<Fail>"+Input+"</Fail>"
-        elif method == 'mm':        
-            if chartparse_mm():
-                outx += WordSep.join(chart[0][EndOfSent])
-            else:
-                outx += "<Fail>"+Input+"</Fail>"
-    return(outx)        
 
 #########  Chart Parsing, ceate a new edge from two connected edges, always start from 0 to connect {0-j} + {j+k}
 #########  If minimal word appraoch is chosen, the sequence with fewest words will be selected
@@ -1221,6 +1164,164 @@ def prob_wb(w,pw1,pw2):
 
     return(p)
 
+    
+
+###### Read syllable pattern
+def read_sylpattern(Filename):
+    global PRON
+    global stable
+    global AK
+    global MKaran
+    global EngAbbr
+    
+    stable = defaultdict(defaultdict)
+    AK = defaultdict(str)
+    MKaran = defaultdict(int)
+#    PRON = defaultdict(str)
+    
+    tmp = [] 
+    file1 = open(Filename,'r',encoding = 'cp874')
+    for line in file1:
+        if re.match(r'#',line):
+            continue
+        line = line.rstrip()
+        tmp = line.split(',')
+        tmp[0] = re.sub(r"X",u"([ก-ฮ])",tmp[0])
+        tmp[0] = re.sub(r"C",u"([กขคจดตทบปผพฟสศซ])",tmp[0])
+        tmp[0] = re.sub(r'Y',u"([ก-ฬฮ])",tmp[0])
+        tmp[0] = re.sub(r'R',u"([รลว])",tmp[0])
+        tmp[0] = re.sub(r'K',u"([ก-ฮ])",tmp[0])
+        tmp[0] = re.sub(r'A',u"([กจฆดตบปอขฉฐถผฝศษสหคชพภทธมยรลวนณซญฑฏฌ])",tmp[0])
+        tmp[0] = re.sub(r'Z',u"([กงดนมบรลฎฏจตณถพศทสชคภปญ])",tmp[0])
+        tmp[0] = re.sub(r'D',u"([กงดนมบวยต])",tmp[0])
+        tmp[0] = re.sub(r'W',u"[ก-ฮ]",tmp[0])
+        tmp[0] = re.sub(r'\.',u"[\.]",tmp[0])
+#        re.sub('Q',u"[\(\)\-\:\'\xCF\xE6]",tmp[0])
+        if tmp[2] == "T":
+            tmp[0] = re.sub(r"T",u"[่้๊๋]",tmp[0])
+        else:
+            tmp[0] = re.sub(r"T",u"[่้๊๋]*",tmp[0])
+            
+#       print tmp[0]
+        PRON[tmp[0]] = tmp[1]
+    
+#    for x in PRON:
+#        print x,PRON[x]
+    stable['X'] = { 'ก' : 'k', 'ข' : 'kh' , 'ค' : 'kh', 'ฆ' : 'kh', 'ง' : 'N', 'จ' : 'c', 'ฉ' : 'ch', 'ช' : 'ch', 'ซ' : 's', 'ฌ' : 'ch','ญ' : 'j','ฎ' : 'd','ฏ' : 't','ฐ' : 'th','ฑ' : 'th','ฒ' : 'th','ณ' : 'n','ด' : 'd','ต' : 't','ถ' : 'th','ท' : 'th','ธ' : 'th','น' : 'n','บ' : 'b','ป' : 'p','ผ' : 'ph','ฝ' : 'f','พ' : 'ph','ฟ' : 'f','ภ' : 'ph','ม' : 'm','ย' : 'j','ร' : 'r','ฤ' : 'r','ล' : 'l','ฦ' : 'l','ว' : 'w','ศ' : 's','ษ' : 's','ส' : 's','ห' : 'h','ฬ' : 'l','อ' : '?','ฮ' : 'h' }
+    stable['Y'] = { 'ก' : 'k', 'ข' : 'k' , 'ค' : 'k', 'ฆ' : 'k', 'ง' : 'N', 'จ' : 't', 'ฉ' : '-', 'ช' : 't', 'ซ' : 't', 'ฌ' : '-','ญ' : 'n','ฎ' : 't','ฏ' : 't','ฐ' : 't','ฑ' : 't','ฒ' : 't','ณ' : 'n','ด' : 't', 'ต' : 't','ถ' : 't','ท' : 't','ธ' : 't','น' : 'n','บ' : 'p','ป' : 'p','ผ' : '-','ฝ' : '-','พ' : 'p','ฟ' : 'p','ภ' : 'p','ม' : 'm','ย' : 'j','ร' : 'n','ฤ' : '-','ล' : 'n','ฦ' : '-','ว' : 'w','ศ' : 't','ษ' : 't','ส' : 't' ,'ห' : '-','ฬ' : 'n','อ' : '-','ฮ' : '-' }
+
+    stable['A'] = stable['X']
+    stable['K'] = stable['X']
+    stable['C'] = stable['X']
+    stable['R'] = stable['X']
+    stable['G'] = stable['X']
+    stable['E'] = stable['X']
+    
+    stable['D'] = stable['Y']
+    stable['Z'] = stable['Y']
+    stable['H'] = stable['Y']
+    stable['F'] = stable['Y']
+
+    AK['ก'] = "นฎฐณตถบปมรลวษสพหฬ"
+    AK['ข'] = "จนณบมยรลฬดตทษภส"
+    AK['ค'] = "กชดตนณปมทฑหบ"
+    AK['ฆ'] = "กบรสช"
+    AK['จ'] = "ณตนมรลทยกด"
+    AK['ฉ'] = "กงนบพรลวทม"
+    AK['ช'] = "กญนยรลวฎคทบมอ"
+    AK['ซ'] = "ล"
+    AK['ญ'] = "กภลญ"
+    AK['ณ'] = "กร"
+    AK['ด'] = "นรมวบ"
+    AK['ต'] = "กตนภยรลฆงถบมวฤท"
+    AK['ถ'] = "กนลวศพงมร"
+    AK['ท'] = "กชนบมยรลวสหงศ"
+    AK['ธ'] = "นภมยรวกพช"
+    AK['น'] = "กทธฎภมยรวคขปลวห"
+    AK['บ'] = "ดรทพม"
+    AK['ป'] = "กฐฏณทนภรวศถฎตปยสหด"
+    AK['ผ'] = "งจชดนลสวกคณทยรอ"
+    AK['ฝ'] = "ร"
+    AK['พ'] = "กญนมยลวสหณจธ"
+    AK['ภ'] = "ยรคณมฤวน"
+    AK['ม'] = "กณตนยรลหศดธมสฆว"
+    AK['ย'] = "กดธภวสบศตมนถช"
+    AK['ร'] = "กจณดพภมยวสหชตถนบ"
+    AK['ล'] = "กคฆดตอบปพมลวห"
+    AK['ว'] = "ชณดนพภรลสมยกจฏตทธปฤศหคธ"
+    AK['ศ'] = "จณนบรลวศพดธกตมยส"
+    AK['ษ'] = "ณฎบภรนคธม"
+    AK['ส'] = "กคงดตถนบปพภมยรลวหอจฟสขทธฤ"
+    AK['ห'] = "กงพทนรภญนมยรลวบต"
+    AK['อ'] = "กงชณดตธนพภมยรลวสศคบฆจทปห"
+    AK['ฑ'] = "มสรนค"
+    AK['ฐ'] = "กจ"
+    AK['ฏ'] = "ก"
+    AK['ฌ'] = "ก"
+
+    EngAbbr = ['เอ','บี','ซี','ดี','อี','เอฟ','จี','เจ','เอช','ไอ','เค','แอล','เอ็ม','เอ็น','โอ','พี','คิว','อาร์','เอส','ที','ยู','วี','เอ็กซ์','เอ็ก','วาย','แซด']
+    ## cannot add 'ดับบลิว' because it has two syllables
+
+    return(1)
+
+
+##########  Read syllanle dict, pronunciation not conformed to sylrule is specified here
+def read_syldict(Filename):
+    global PRON
+    
+    file1 = open(Filename,'r',encoding='cp874')
+    for line in file1:
+        if re.match(r'#',line):
+            continue
+        line = line.rstrip()
+        tmp = line.split("\t")
+        PRON[tmp[0]] = tmp[1]
+    return(1)
+
+####  read trigram statistics file
+def read_stat(Filename):
+
+    global TriCount
+    global BiCount
+    global Count
+    global BiType
+    global Type
+    global TotalWord
+    global TotalLex
+    global TotalWord
+    global TotalLex
+
+    TriCount = defaultdict(int)
+    BiCount = defaultdict(int)
+    BiType = defaultdict(int)
+    Count = defaultdict(int)
+    Type = defaultdict(int)
+    
+    TotalWord = 0
+    TotalLex = 0
+    TriCount.clear()
+    BiCount.clear()
+    Count.clear()
+    BiType.clear()
+    Type.clear()
+
+    fileObject = open(Filename,'rb')  
+    TriCount = pickle.load(fileObject)
+    for (X,Y,Z) in TriCount:
+        BiType[(X,Y)] += 1
+        BiCount[(X,Y)] += TriCount[(X,Y,Z)]
+        Count[X] += TriCount[(X,Y,Z)]
+
+    for (X,Y) in BiCount:
+        Type[X] += 1
+        
+    for X in Count:
+        TotalLex += 1
+        TotalWord += Count[X]
+        
+    return(1)
+    
+
 ########## Preprocess Thai texts  #### adding SegSep and <s> for speocal 
 def preprocess(input):
     global SegSep
@@ -1295,6 +1396,13 @@ def initial():
     
 #    try:
 #        ATA_PATH = pkg_resources.resource_filename('tltk', '/')
+    
+    read_sylpattern(ATA_PATH + '/sylrule.lts')
+    read_syldict(ATA_PATH +  '/thaisyl.dict')
+    read_stat(ATA_PATH + '/sylseg.3g')
+    read_thdict(ATA_PATH +  '/thdict')
+    read_PhSTrigram(ATA_PATH +  '/PhSTrigram.sts')
+
     return(1)
 
 ############ END OF GENERAL MODULES ##########################################################################
