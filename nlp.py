@@ -165,6 +165,95 @@ def pack_ner(sent):
         
     return(out)
 
+###############################################################################################
+
+###  segment discourse unit + word segmentation
+###  Input = Thai text,  syllable segments will be used to determine edu
+###  then, syllable list in each edu will be passed to word segmentation
+###  The output is a list of word segments marked with '|' and edu segments marked with '<u/>' 
+def segment(txt):
+    global SegSep
+    global SSegSep
+    global useg_model
+    output = ""
+    out = ""
+    
+#    print(txt)
+    sylseg = syl_segment(txt)
+    sylseg = re.sub(' ','<s/>',sylseg)
+    sylseg = re.sub(r'([^~])<s/>',r'\1~<s/>',sylseg)
+    sylseg = re.sub(r'<s/>([^~])',r'<s/>~\1',sylseg)
+
+    sylcopy = sylseg
+    sylcopy = re.sub(r'~[0-9\.\,]+~','~DIGIT~',sylcopy)
+    sylcopy = re.sub(r'~[a-zA-Z0-9\\\/\?\'\"\(\)\.]+~','~FOREIGN~',sylcopy)
+
+    parcopy = sylcopy.split('~')
+    par = sylseg.split('~')
+#    print(sylcopy)
+    
+    try:
+      useg_model
+    except NameError:
+      useg_model_load()
+
+    tags = useg_model.predict([features(parcopy, index) for index in range(len(par))])
+    lst_tag = zip(par,tags)
+    syl_seq = ''
+    for (w,t) in lst_tag:
+        if t == '<u/>':
+            out = wordseg_colloc(syl_seq)
+            output += out+'<u/>'
+            syl_seq = ''
+        else:
+#            lst_syl.append(w)
+            syl_seq += w+'~'
+    return(output)
+
+def useg_model_load():
+    global useg_model
+    path = os.path.abspath(__file__)
+    ATA_PATH = os.path.dirname(path)
+    filehandler = open(ATA_PATH +'/' + 'sent_segment_rfs.pick', 'rb') 
+    useg_model = pickle.load(filehandler)
+    
+def untag(tagged_sentence):
+    return [w for w, t in tagged_sentence]
+
+def transform_to_dataset(tagged_sentences):
+    X, y = [], []
+    for index in range(len(tagged_sentences)):
+        X.append(features(untag(tagged_sentences), index))
+        y.append(tagged_sentences[index][1]) 
+    return X, y
+
+## This function will get features from each token  sentence = list of tokens
+def features(sentence, index):
+    return {
+        'word': sentence[index],
+        'prev_word': '' if index == 0 else sentence[index - 1],
+        'prev_biword' : '' if index <= 1 else sentence[index - 2]+sentence[index - 1],
+        'next_word': '' if index == len(sentence) - 1 else sentence[index + 1],
+        'next_biword': '' if index >= len(sentence) - 2 else sentence[index + 1]+sentence[index + 2],
+        'has_hyphen': '-' in sentence[index],
+        'is_numeric': sentence[index] == 'DIGIT',
+        'is_space' : '<s/>' in sentence[index],
+        'after_space' : False if index == 0 else sentence[index-1] == '<s/>',
+        'before_space' : False if index == len(sentence) - 1 else sentence[index+1] == '<s/>',
+        'dist_space' : 0 if '<s/>' not in sentence[:index] else distance(sentence,index),
+        'Mai_yamok' : 'ๆ' in sentence[index],
+        'after_FOR' : False if index == 0 else sentence[index-1] == 'FOREIGN',
+        'before_FOR' : False if index == len(sentence) - 1 else sentence[index+1] == 'FOREIGN',
+        'after_DIG' : False if index == 0 else sentence[index-1] == 'DIGIT',
+        'before_DIG' : False if index == len(sentence) - 1 else sentence[index+1] == 'DIGIT',
+    }
+
+def distance(sentence,index):
+    i = index-1
+    while sentence[i] != '<s/>' and i > 0:
+        i-=1
+    return(index-i)    
+
 #############################################################################################################
 ### Thai grapheme to phoneme
 ### Input = a chunk of Thai texts
@@ -279,6 +368,7 @@ def ReplaceSnd(phone,codematch,charmatch):
           snd = re.sub(x,s,snd)
           i += 1 
      snd += '8'
+#     print('Sound',snd)
      return(snd)
 
 def NotExceptionSyl(codematch,charmatch,form,phone):
@@ -332,6 +422,7 @@ def ToneAssign(keymatch,phone,codematch,charmatch):
             final = ''
 
     deadsyll = DeadSyl(phone)
+#    print('dead syallble',phone,deadsyll,lead,init,final)
 
 ### change + for leading syllable
     if "+'" in phone:
@@ -587,6 +678,314 @@ def th2roman(txt):
     
 ### end of modules used in g2p  ###############    
 ###################################################################
+###### Thai word segmentation using maximum collocation approach
+###### Input is a list of syllables
+###### also add each syllable as a potential word
+def wordseg_colloc(Input):
+    global TDICT
+    global EndOfSent
+    global chart
+    global SegSep
+    global WordSep
+    global CollocSt
+    
+    part = []
+    chart = defaultdict(dict)
+    SylSep = '~'
+    outx = ""
+    chart.clear()
+    CollocSt = defaultdict(float)
+    
+    part = Input.split(SegSep)
+    for inx in part:
+        SylLst = syl_segment(inx).split('~')
+        if SylLst[-1] == '<s/>': SylLst.pop()
+#        SylLst = inx.split(SylSep)
+        EndOfSent = len(SylLst)
+        ######### Gen unknown word by set each syllable as a potential word
+#        gen_unknown_thaiw(SylLst)
+        for i in range(EndOfSent):
+            chart[i][i+1] = [SylLst[i]]
+        eng_abbr(SylLst)    
+        ############################################################
+        for i in range(EndOfSent):
+            for j in range(i,EndOfSent+1):
+                wrd = ''.join(SylLst[i:j])
+                if wrd in TDICT:
+                    chart[i][j] = [wrd]
+                    if j > i+1:   ### more than one syllable, compute St
+                        St = 0.0
+                        NoOfSyl = len(SylLst[i:j])
+                        for ii in range(i,j-1):
+                            St += compute_colloc("mi",SylLst[ii],SylLst[ii+1])
+#                            print (SylLst[ii],SylLst[ii+1],xx)
+                        CollocSt[(i,j)] = St    #### Compute STrength of the word
+#                        print(i,j,wrd,CollocSt[(i,j)])
+                    else:   ### one sylable word St = 0
+                        CollocSt[(i,j)] = 0.0
+        if chart_parse():
+#            return(chart[0][EndOfSent])
+            outx += WordSep.join(chart[0][EndOfSent])
+            return(outx)
+        else:
+            return("<Fail>"+Input+"</Fail>")
+        
+
+####################################################################
+    
+def chartparse_mm_bn():
+    global chartnb
+    global WordSep
+    
+    for j in range(EndOfSent):
+        chartx = deepcopy(chartnb)
+        if j in [ key[1] for key in chartnb if key[0] == 0 ]:
+            for s1 in chartnb[(0,j)]:  # get the first part
+                for k in [ key[1] for key in chartnb if key[0] == j ]:  # connecting paths 
+                     for s2 in chartnb[(j,k)]:  # get the second part
+                        path = s1+WordSep+s2
+                        if path not in chartnb[(0,k)]:
+                            chartx[(0,k)][path] = chartx[(0,j)][s1] + chartx[(j,k)][s2]  ## sum the number of words from s1 and s2
+#                            print("New =>",0,j,k,chartx[(0,k)])
+        chartnb = deepcopy(chartx)
+    if chartnb[(0,EndOfSent)]:
+        return(1)
+    else:
+        return(0)
+
+####################################################################
+#### Word segmentation using Maximal Matching (minimal word) approach
+#### Input = Thai string,  method = colloc|ngram|mm , 
+####   spellchk=yes|no 
+######################################################################
+def word_segment(Input,method='colloc',spellchk='no'):
+    global SegSep
+    global SSegSep
+    output = ""
+    out = ""
+    
+    Input = preprocess(Input)
+    sentLst = Input.split(SegSep)
+    for s in sentLst:
+#        print "s:",s
+        inLst = s.split(SSegSep)
+        for inp in inLst:
+            if inp == '': continue            
+            objMatch = re.match(r"[^ก-์]+",inp)
+            if objMatch:
+                out = inp
+            else:
+                if method == 'mm':
+                    out = wordseg_mm(inp,method,spellchk)
+                elif method == 'colloc':
+                    out =wordseg_colloc(inp)
+                elif method == 'ngram':
+                    out =wordseg_mm(inp,method,spellchk)        
+            output = output+out+WordSep
+#        output = output.rstrip(WordSep)
+        output = output+'<s/>'    ####write <s/> output for SegSep   
+    return(output)
+
+def word_segment_mm(Input):
+    return(word_segment(Input,method='mm'))
+
+def wordseg_mm(Input,method,spellchk):    
+    global TDICT
+    global EndOfSent
+    global chart
+    global SegSep
+    global WordSep
+
+    part = []
+    chart = defaultdict(dict)
+    outx = ""
+    chart.clear()
+    
+    part = Input.split(SegSep)
+    for inx in part:
+        if method == 'ngram':
+            SylLst = syl_segment(inx).split('~')
+            SylLst.pop()
+#            print('syl',SylLst)
+        else:
+            SylLst = list(inx)
+        EndOfSent = len(SylLst)    
+        if spellchk == 'yes' and method == 'ngram':            
+            gen_unknown_thaiw(SylLst)
+        eng_abbr(SylLst)    
+        for i in range(EndOfSent):
+            for j in range(i,EndOfSent+1):
+                wrd = ''.join(SylLst[i:j])
+                if wrd in TDICT:
+                    chart[i][j] = [wrd]
+                    
+        if method == 'ngram':            
+            if chartparse_ngram():
+                outx += WordSep.join(chart[0][EndOfSent])
+            else:
+                outx += "<Fail>"+Input+"</Fail>"
+        elif method == 'mm':        
+            if chartparse_mm():
+                outx += WordSep.join(chart[0][EndOfSent])
+            else:
+                outx += "<Fail>"+Input+"</Fail>"
+    return(outx)        
+
+#########  Chart Parsing, ceate a new edge from two connected edges, always start from 0 to connect {0-j} + {j+k}
+#########  If minimal word appraoch is chosen, the sequence with fewest words will be selected
+def chartparse_mm():
+    global chart
+    global EndOfSent
+    
+    for j in range(EndOfSent):
+        chartx = deepcopy(chart)
+        if j in chart[0]:
+            s1 = chart[0][j]
+            for k in chart[j]:
+                    s2 = chart[j][k]
+#                    print 0,j,k
+                    if k not in chart[0]:                        
+                        chartx[0][k] = s1+s2
+                    else:
+                        if len(s1)+len(s2) <= len(chart[0][k]):
+                            chartx[0][k] = s1+s2
+        chart = deepcopy(chartx)
+    if EndOfSent in chart[0]:
+        return(1)
+    else:
+        return(0)
+
+### use bigram prob to select the best sequnece
+def chartparse_ngram():
+    global chart
+    global CProb
+
+    CProb.clear()
+
+
+    for j in range(1,EndOfSent):
+        chartx = deepcopy(chart)
+        if j in chart[0]:
+            s1 = chart[0][j]
+            for k in chart[j]:
+                    s2 = chart[j][k]
+#                    print 0,j,k
+                    if k not in chart[0]:                        
+                        chartx[0][k] = s1+s2
+                        CProb[k] = BigramProb(s1+s2)
+#                        print(s1+s2,'new',CProb[k])
+                    else:
+#                        print(s1+s2,BigramProb(s1+s2),CProb[k])
+                        if BigramProb(s1+s2) > CProb[k]:
+                            chartx[0][k] = s1+s2
+                            CProb[k] = BigramProb(s1+s2)
+#                            print(s1+s2,'old',CProb[k])
+        chart = deepcopy(chartx)
+    if EndOfSent in chart[0]:
+        return(1)
+    else:
+        return(0)
+
+def BigramProb(WLst):
+    global CProb
+
+    p=1.
+    for i in range(len(WLst)-1):
+        cx = tltk.corpus.bigram(WLst[i],WLst[i+1])
+        if cx > 0.:
+            p += math.log(cx/1000000)
+        else:
+            p += math.log(0.0001/1000000)    
+
+    return(p)
+##########################################
+# Compute Collocation Strength between w1,w2
+# stat = chi2 | mi | ll
+##########################################
+def compute_colloc(stat,w1,w2):
+    global TriCount
+    global BiCount
+    global Count
+    global BiType
+    global Type
+    global NoTrigram
+    global TotalWord
+    global TotalLex
+
+    if BiCount[(w1,w2)] < 1 or Count[w1] < 1 or Count[w2] < 1:
+        BiCount[(w1,w2)] +=1
+        Count[w1] +=1
+        Count[w2] +=1 
+        TotalWord +=2
+    
+###########################
+##  Mutual Information
+###########################
+    if stat == "mi":
+        mi = float(BiCount[(w1,w2)] * TotalWord) / float((Count[w1] * Count[w2]))
+        value = math.log(mi,2)
+#########################
+### Compute Chisquare
+##########################
+    if stat == "chi2":
+        value=0
+        O11 = BiCount[(w1,w2)]
+        O21 = Count[w2] - BiCount[(w1,w2)]
+        O12 = Count[w1] - BiCount[(w1,w2)]
+        O22 = TotalWord - Count[w1] - Count[w2] +  BiCount[(w1,w2)]
+        value = float(TotalWord * (O11*O22 - O12 * O21)**2) / float((O11+O12)*(O11+O21)*(O12+O22)*(O21+O22))
+
+    return(value)
+    
+##############################################################################    
+########  create each unit (char/syllable) as a possible edge for chart parsing
+def gen_unknown_thaiw(SylLst):
+    global chart
+    global EndOfSent
+
+    for i in range(EndOfSent):
+        chart[i][i+1] = [SylLst[i]]
+### add one unit that might be misspelled
+        if SylLst[i] not in TDICT:
+            for newwrd in spell_candidates(SylLst[i]):
+                    if newwrd in TDICT:
+#                        print(SylLst[i],'1=>',newwrd)
+                        chart[i][i+1] = [newwrd]            
+### add two or three consecutive units that might be misspelled
+        if ''.join(SylLst[i:i+2]) not in TDICT:
+           for newwrd in spell_candidates(''.join(SylLst[i:i+2])):
+                    if newwrd in TDICT:
+#                        print(SylLst[i:i+2],'2=>',newwrd)
+                        chart[i][i+2] = [newwrd]
+        if ''.join(SylLst[i:i+3]) not in TDICT:
+           for newwrd in spell_candidates(''.join(SylLst[i:i+3])):
+                    if newwrd in TDICT:
+#                        print(SylLst[i:i+3],'3=>',newwrd)
+                        chart[i][i+3] = [newwrd]
+                        
+    return(1)
+
+####  gen a word from a sequence of English abbreviation
+####  e.g.  เอบีเอ็น เอ็นบีเค  
+def eng_abbr(SylLst):
+    global chart
+    global EndOfSent
+    global EngAbbr
+    i=0
+    while i < EndOfSent:
+        if SylLst[i] in EngAbbr:
+            j=i+1
+            while SylLst[j] in EngAbbr:
+                j=j+1
+            if j>i+1:
+                chart[i][j] = [''.join(SylLst[i:j])]
+                print(SylLst[i:j],'=>EngAbbr')
+                i=j+1
+        else:
+            i=i+1
+    return(1)
+
+
 
 #############################################################################################################
 #########  Chart Parsing, ceate a new edge from two connected edges, always start from 0 to connect {0-j} + {j+k}
@@ -617,6 +1016,83 @@ def chart_parse():
         return(0)
 
 #############################################################################################################
+###  Syllable Segmentation for Thai texts
+### Input = a paragraph of Thai texts
+def syl_segment(Input):
+    global SegSep
+    global SSegSep
+    output = ""
+    out = ""
+    
+    Input = preprocess(Input)
+    sentLst = Input.split(SegSep)
+    for s in sentLst:
+#        print "s:",s
+        inLst = s.split(SSegSep)
+        for inp in inLst:
+            if inp == '': continue            
+            objMatch = re.match(r"[^ก-์]+",inp)
+            if objMatch:
+                out = inp
+            else:
+                out = sylseg(inp)
+            output = output+out+SylSep
+#        output = output.rstrip(SylSep)
+        output = output+'<s/>'    ####write <s/> output for SegSep   
+    return(output)        
+
+#############################################################################################################
+####### Segment syllable using trigram statistics, only strings matched with a defined syllable pattern will be created
+####  Input = Thai string
+def sylseg(Input):
+    global SylSep
+    global PRON
+    
+    schart = defaultdict(dict)
+    probEnd = defaultdict(float)
+    schartx = {}
+    schart.clear()
+    probEnd.clear()
+    tmp = []
+    
+    EndOfInput = len(Input)
+    for f in PRON:
+        for i in range(EndOfInput):
+            Inx = Input[i:]
+            matchObj = re.match(f,Inx)
+            if matchObj:
+                k=i+len(matchObj.group())
+                schart[i][k] = [matchObj.group()]
+                probEnd[(i,k)] = prob_trisyl([matchObj.group()])
+#                print("match",i,k, matchObj.group(),f,probEnd[(i,k)])
+    
+    for j in range(EndOfInput):
+        schartx = deepcopy(schart)
+        if j in schart[0]:
+            s1 = schart[0][j]
+            for k in schart[j]:
+                    s2 = schart[j][k]
+                    ####****** change this to merge only form, need to do this, otherwise probtrisyl is not correct.
+                    tmp = mergekaran(s1+s2)
+                    if k not in schart[0]:                        
+#                        schartx[0][k] = s1+s2
+#                        probEnd[k] = prob_trisyl(s1+s2)
+                        schartx[0][k] = tmp
+                        probEnd[(0,k)] = prob_trisyl(tmp)
+#                        print("new",tmp,probEnd[k])
+                    else:
+#                        p = prob_trisyl(s1+s2)
+                        p = prob_trisyl(tmp)
+                        if p > probEnd[(0,k)]:
+#                            print("replace",tmp,p,probEnd[(0,k)])
+#                            schartx[0][k] = s1+s2 
+                            schartx[0][k] = tmp 
+                            probEnd[(0,k)] = p
+        schart = deepcopy(schartx)
+    if EndOfInput in schart[0]:    
+        return(SylSep.join(schart[0][EndOfInput]))
+    else:
+        return('<Fail>'+Input+'</Fail>')
 
 ######################
 def mergekaran(Lst):
@@ -819,8 +1295,6 @@ def initial():
     
 #    try:
 #        ATA_PATH = pkg_resources.resource_filename('tltk', '/')
-
-
     return(1)
 
 ############ END OF GENERAL MODULES ##########################################################################
