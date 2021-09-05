@@ -2,14 +2,14 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using Python.Included;
+//using Python.Included;
 using Python.Runtime;
 
 namespace ThaiLanguageToolkit
 {
-    class Program
+    public class Program
     {
-        static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
@@ -20,20 +20,21 @@ namespace ThaiLanguageToolkit
             // If you need a different Python version or platform check out the Python.Installer examples!
 
             // Install to local directory
-            Installer.InstallPath = Path.GetFullPath(".");
+            //Installer.InstallPath = Path.GetFullPath(".");
 
             // See what the installer is doing
-            Installer.LogMessage += Console.WriteLine;
+            //Installer.LogMessage += Console.WriteLine;
 
             // Install the embedded python distribution
-            await Installer.SetupPython();
+            //await Installer.SetupPython();
 
             // Install pip3 for package installation
-            Installer.TryInstallPip();
+            //Installer.TryInstallPip();
 
             // Use pythonnet from that installation
             PythonEngine.Initialize();
 
+            // Add your a path to your Python file as a searched module path
             dynamic os = Py.Import("os");
             dynamic sys = Py.Import("sys");
             sys.path.append(os.getcwd());
@@ -53,6 +54,8 @@ namespace ThaiLanguageToolkit
                 elapsedTime.Seconds,
                 elapsedTime.Milliseconds
             );
+
+            PythonEngine.Shutdown();
         }
     }
 }
