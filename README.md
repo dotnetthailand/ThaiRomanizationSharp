@@ -136,6 +136,8 @@
 
 
 # Reference & useful links
+- https://github.com/PyThaiNLP/pythainlp/issues/11
+- https://github.com/comdevx/thai2karaoke
 
 # Todo
 - [ ] More details what code changes in nlp.py
