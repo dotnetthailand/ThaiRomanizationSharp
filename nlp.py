@@ -1,7 +1,7 @@
 # Credit to Assoc.Prof. Wirote Aroonmanakun (Ph.D.)
-# Director, The Siridhorn Thai Language Institute, Chulalongkorn University
-# Orignal code from https://github.com/attapol/tltk/blob/master/tltk/nlp.py
-# http://pioneer.chula.ac.th/~awirote/resources/thai-romanization.html
+# Director of the Siridhorn Thai Language Institute, Chulalongkorn University
+# Original code is from https://github.com/attapol/tltk/blob/master/tltk/nlp.py.
+# Thai Romanization main project page http://pioneer.chula.ac.th/~awirote/resources/thai-romanization.html.
 
 #########################################################
 ## Thai Language Toolkit : version  1.1.7
@@ -9,7 +9,7 @@
 ## word_segmentation, syl_segementation written by Wirote Aroonmanakun
 ## Implemented :
 ##      chunk, ner_tag, segment, word_segment, syl_segment, word_segment_mm, word_segment_nbest,
-##      g2p, th2roman, pos_tag_wordlist, 
+##      g2p, th2roman, pos_tag_wordlist,
 ##      read_thaidict, reset_thaidict, check_thaidict
 ##      spell_candidates,
 #########################################################
@@ -25,14 +25,14 @@ import pickle
 ##########################################################
 def read_thdict(Filename):
     global TDICT
-    fileObject = open(Filename,'rb')  
+    fileObject = open(Filename,'rb')
     TDICT = pickle.load(fileObject)
 
 ####################################################################
 ##  spelling correction modified from Peter Norvig  http://norvig.com/spell-correct.html
 ####################################################################
 
-def spell_candidates(word): 
+def spell_candidates(word):
 #    return (known([word]) or known(edits1(word)) or known(edits2(word)) )
     return ( known(edits1(word)) )
 
@@ -52,7 +52,7 @@ def edits1(word):
 
 ##########################################################################
 ## POS tagging using nltk.tag.perceptron
-#########################################################################    
+#########################################################################
 ## named entity recognition for Person, Location, Organization
 ## Input = list 0f (w,pos)
 ## Output = list of (w,pos,ner_tag)
@@ -133,7 +133,7 @@ def pack_ner(sent):
             out += '</NEl>'+w+'/'+p+'|'
             flag = 'O'
             continue
-        else:     
+        else:
             out += w+'/'+p+'|'
     if flag == 'NEp':
         out += '</NEp>'
@@ -141,7 +141,7 @@ def pack_ner(sent):
         out += '</NEo>'
     elif flag == 'NEl':
         out += '</NEl>'
-        
+
     return(out)
 
 ###############################################################################################
@@ -149,14 +149,14 @@ def pack_ner(sent):
 ###  segment discourse unit + word segmentation
 ###  Input = Thai text,  syllable segments will be used to determine edu
 ###  then, syllable list in each edu will be passed to word segmentation
-###  The output is a list of word segments marked with '|' and edu segments marked with '<u/>' 
+###  The output is a list of word segments marked with '|' and edu segments marked with '<u/>'
 def segment(txt):
     global SegSep
     global SSegSep
     global useg_model
     output = ""
     out = ""
-    
+
 #    print(txt)
     sylseg = syl_segment(txt)
     sylseg = re.sub(' ','<s/>',sylseg)
@@ -170,7 +170,7 @@ def segment(txt):
     parcopy = sylcopy.split('~')
     par = sylseg.split('~')
 #    print(sylcopy)
-    
+
     try:
       useg_model
     except NameError:
@@ -193,9 +193,9 @@ def useg_model_load():
     global useg_model
     path = os.path.abspath(__file__)
     ATA_PATH = os.path.dirname(path)
-    filehandler = open(ATA_PATH +'/' + 'sent_segment_rfs.pick', 'rb') 
+    filehandler = open(ATA_PATH +'/' + 'sent_segment_rfs.pick', 'rb')
     useg_model = pickle.load(filehandler)
-    
+
 def untag(tagged_sentence):
     return [w for w, t in tagged_sentence]
 
@@ -203,7 +203,7 @@ def transform_to_dataset(tagged_sentences):
     X, y = [], []
     for index in range(len(tagged_sentences)):
         X.append(features(untag(tagged_sentences), index))
-        y.append(tagged_sentences[index][1]) 
+        y.append(tagged_sentences[index][1])
     return X, y
 
 ## This function will get features from each token  sentence = list of tokens
@@ -231,7 +231,7 @@ def distance(sentence,index):
     i = index-1
     while sentence[i] != '<s/>' and i > 0:
         i-=1
-    return(index-i)    
+    return(index-i)
 
 #############################################################################################################
 ### Thai grapheme to phoneme
@@ -243,13 +243,13 @@ def g2p(Input):
     global SSegSep
     output = ""
     out = ""
-    
+
     Input = preprocess(Input)
     sentLst = Input.split(SegSep)
     for s in sentLst:
         inLst = s.split(SSegSep)
         for inp in inLst:
-            if inp == '': continue            
+            if inp == '': continue
             objMatch = re.match(r"[^ก-์]+",inp)
             if objMatch:
                 out = inp+'<tr/>'+inp
@@ -257,8 +257,8 @@ def g2p(Input):
                 y = sylparse(inp)
                 out = wordparse(y)
             output = output+out+WordSep
-        output = output+'<s/>'    ####write <s/> output for SegSep   
-    return(output)        
+        output = output+'<s/>'    ####write <s/> output for SegSep
+    return(output)
 
 #############################################################################################################
 ####### Segment syllable using trigram statistics, only strings matched with a defined syllable pattern will be created
@@ -267,7 +267,7 @@ def sylparse(Input):
     global SylSep
     global PRON
     global PRONUN
-    
+
     PRONUN = defaultdict(list)
     schart = defaultdict(dict)
     probEnd = defaultdict(float)
@@ -275,7 +275,7 @@ def sylparse(Input):
     schart.clear()
     probEnd.clear()
     tmp = []
-    
+
     EndOfInput = len(Input)
     for f in PRON:
         for i in range(EndOfInput):
@@ -289,11 +289,11 @@ def sylparse(Input):
                 except IndexError:
                     try:
                         matchObj.group(2)
-                        charmatch = matchObj.group(1) + ' ' + matchObj.group(2) 
+                        charmatch = matchObj.group(1) + ' ' + matchObj.group(2)
                     except IndexError:
                         try:
                             matchObj.group(1)
-                            charmatch = matchObj.group(1) 
+                            charmatch = matchObj.group(1)
                         except IndexError:
                             PRONUN[matchObj.group()].append(PRON[f])
                 k=i+len(matchObj.group())
@@ -301,21 +301,21 @@ def sylparse(Input):
                 codematch = PRON[f]
                 codematch = re.sub(r"[^AKYDZCRX]","",codematch)
                 if codematch:
-#                    print("code char",codematch,charmatch)            
+#                    print("code char",codematch,charmatch)
                     phone = ReplaceSnd(PRON[f],codematch,charmatch)
                     if  NotExceptionSyl(codematch,charmatch,keymatch,phone):
                         (phone,tone) = ToneAssign(keymatch,phone,codematch,charmatch)
 #                        print('assign tone',tone,' to',keymatch)
-                        if (tone < '5'): phone = re.sub(r'8',tone,phone)          
-                        (keymatch,phone) = TransformSyl(keymatch,phone)         
+                        if (tone < '5'): phone = re.sub(r'8',tone,phone)
+                        (keymatch,phone) = TransformSyl(keymatch,phone)
                     PRONUN[''.join(schart[i][k])].append(phone)
 #                    print("Add",PRON[f],''.join(schart[i][k]), phone)
                     if  re.match(r'ทร',keymatch)  and  re.match(r"thr",phone):            #### gen more syllable  ทร   thr => s
-                        phone=re.sub(r"thr","s",phone) 
+                        phone=re.sub(r"thr","s",phone)
                         PRONUN[''.join(schart[i][k])].append(phone)
 #                        print("Add2",PRON[f],''.join(schart[i][k]), phone)
                     probEnd[(i,k)] = prob_trisyl(schart[i][k])
-    
+
     for j in range(EndOfInput):
         schartx = deepcopy(schart)
         if j in schart[0]:
@@ -323,16 +323,16 @@ def sylparse(Input):
             for k in schart[j]:
                     s2 = schart[j][k]
                     tmp = mergekaran1(s1+s2)
-                    if k not in schart[0]:                        
+                    if k not in schart[0]:
                         schartx[0][k] = tmp
                         probEnd[(0,k)] = prob_trisyl(tmp)
                     else:
                         p = prob_trisyl(tmp)
                         if p > probEnd[(0,k)]:
-                            schartx[0][k] = tmp 
+                            schartx[0][k] = tmp
                             probEnd[(0,k)] = p
         schart = deepcopy(schartx)
-    if EndOfInput in schart[0]:    
+    if EndOfInput in schart[0]:
         return(SylSep.join(schart[0][EndOfInput]))
     else:
         return('<Fail>'+Input+'</Fail>')
@@ -345,7 +345,7 @@ def ReplaceSnd(phone,codematch,charmatch):
      for x in list(codematch):
           s = stable[x][tmp1Lst[i]]
           snd = re.sub(x,s,snd)
-          i += 1 
+          i += 1
      snd += '8'
 #     print('Sound',snd)
      return(snd)
@@ -353,7 +353,7 @@ def ReplaceSnd(phone,codematch,charmatch):
 def NotExceptionSyl(codematch,charmatch,form,phone):
     if re.search(r'\.',form):  return(1)
 ##  check pronunciation marked in syllable dict, if it exists and it is different from the current phone, disregard current phone.
-    if 'CR' in codematch:        
+    if 'CR' in codematch:
 #exception for CR = ถร  ผร  ดล  ตล ถล ทล บล ดว ตว ถว ทว บว ปว ผว สว
         if re.match(r'ผ ร|ด ล|ต ล|ท ล|ด ว|ต ว|ท ว|บ ว|ป ว|พ ว|ฟ ว|ผ ว|ส ล|ส ว|ร ร|ศ ล|ศ ว',charmatch):  return(-1)
 #exception for AK = กย กง ขง คง คม จง จน จก ฉย ชง ดย ดง ดน ดม ถย บย บง บน บม ปง ผม พง ฟย ฟง ฟน ฟม ซย ซง ซน ซม  ถร บล บว ปว พร พว นน ยด คว
@@ -371,7 +371,7 @@ def NotExceptionSyl(codematch,charmatch,form,phone):
 
 #######################################
 # Tone assign :  ม้าน, maan, codematch XY,  charmatch  ม น,  => return 3
-# ToneAssign($keymatch,$phone,$codematch,$charmatch); 
+# ToneAssign($keymatch,$phone,$codematch,$charmatch);
 #######################################
 def ToneAssign(keymatch,phone,codematch,charmatch):
 #print "ToneAssign: $_[0] : $_[1] : $_[2] : $_[3]\n";
@@ -388,7 +388,7 @@ def ToneAssign(keymatch,phone,codematch,charmatch):
         init = lx[0]
         if len(lx) > 1:
             final = lx[1]
-        else: final = ''    
+        else: final = ''
     elif re.search(r'AK',codematch) or re.search(r'CR',codematch):
 #        (lead, init, final) = charmatch.split(' ')
         lx = charmatch.split(' ')
@@ -396,7 +396,7 @@ def ToneAssign(keymatch,phone,codematch,charmatch):
         if len(lx) > 2:
             final = lx[2]
             init = lx[1]
-        elif len(lx) >1:    
+        elif len(lx) >1:
             init = lx[1]
             final = ''
 
@@ -410,10 +410,10 @@ def ToneAssign(keymatch,phone,codematch,charmatch):
             phone = re.sub(r'\+','1',phone)
         elif lead in 'กจดตบปอ':
             phone = re.sub(r'\+','1',phone)
-        else:    
+        else:
             phone = re.sub(r'\+','3',phone)
 
-#### normal syllable 
+#### normal syllable
     if init in 'กจดตฎฏบปอ':   # middle consonant
         if deadsyll == 'L':
             if re.search(r'\u0E48',keymatch): return(phone,'1')   #Maiaek
@@ -474,7 +474,7 @@ def ToneAssign(keymatch,phone,codematch,charmatch):
             elif re.search(r'\u0E49',keymatch): return(phone,'3')  #Maitoo
             elif re.search(r'\u0E4A',keymatch): return(phone,'9')  #Maitri
             elif re.search(r'\u0E4B',keymatch): return(phone,'9')  #Maijatawa
-            else: return(phone,'0')        
+            else: return(phone,'0')
         elif re.search(r'[aeiouxOU\@][aeiouxOU\@]+',phone):  # long vowel
             if re.search(r'\u0E48',keymatch): return(phone,'9')   #Maiaek
             elif re.search(r'\u0E49',keymatch): return(phone,'3')  #Maitoo
@@ -503,7 +503,7 @@ def DeadSyl(phone):
         return('L')
     else:
         return('D')
-    
+
 def TransformSyl(form,phone):
 # xxY[12]  eeY[12] @@Y[12]  => ลดสระสั้น  ใน Y = [nmN]
     if re.search(r'xx[nmN][12]',phone):
@@ -524,8 +524,8 @@ def TransformSyl(form,phone):
     elif re.search(r'[จซศส]ร',form) and re.search(r'[cs]r',phone) and re.search(r"[^']",phone):
         phone = re.sub('r','',phone)
     return (form,phone)
-    
-#### word segment and select the most likely pronunciation in a word    
+
+#### word segment and select the most likely pronunciation in a word
 def wordparse(Input):
     global TDICT
     global EndOfSent
@@ -533,14 +533,14 @@ def wordparse(Input):
     global SegSep
     global WordSep
     global CollocSt
-    
+
     part = []
     chart = defaultdict(dict)
     SylSep = '~'
     outx = ""
     chart.clear()
     CollocSt = defaultdict(float)
-    
+
     part = Input.split(SegSep)
     for inx in part:
         SylLst = inx.split(SylSep)
@@ -570,17 +570,17 @@ def wordparse(Input):
             outp = []
             for  wx in chart[0][EndOfSent]:
                 tmp = wx.split(SylSep)
-                op = SelectPhones(tmp)    
+                op = SelectPhones(tmp)
                 outp.append(op)
             outx += WordSep.join(outp)
             return(outx)
         else:
             return("<Fail>"+Input+"</Fail>")
-    
+
 ## input = list of syllables
 ## output = syl/pron-syl/pron-syl/pron
 def SelectPhones(slst):
-   global PRONUN 
+   global PRONUN
    p=''
    out = []
    prmax = 0.
@@ -608,7 +608,7 @@ def SelectPhones(slst):
         out.append(outp)
 #        print('out',slst[i],out)
         i += 1
-#   print('Select Phone',out)       
+#   print('Select Phone',out)
    return('~'.join(out))
 
 
@@ -637,7 +637,7 @@ def ProbPhone(p,pw,w,nw):
         p1 = (1 + math.log(PhSUnigram[(w,p)])) / (1. + math.log(FrmSUnigram[w]))
     prob =  0.8 * p3 + 0.16 * p2 + 0.03 * p1 + .00000000001
     return(prob)
-        
+
 def read_PhSTrigram(File):
     global PhSTrigram
     global FrmSTrigram
@@ -645,14 +645,14 @@ def read_PhSTrigram(File):
     global FrmSBigram
     global PhSUnigram
     global FrmSUnigram
-    
+
     PhSTrigram = defaultdict(float)
     FrmSTrigram = defaultdict(float)
     PhSBigram = defaultdict(float)
     FrmSBigram = defaultdict(float)
     PhSUnigram = defaultdict(float)
     FrmSUnigram = defaultdict(float)
-    
+
     IFile = open(File,'r',encoding='cp874')
     for line in IFile.readlines():
         line = line.rstrip()
@@ -670,7 +670,7 @@ def read_PhSTrigram(File):
         PhSUnigram[(x2,p)] += float(ct)
         FrmSUnigram[x2] += float(ct)
     IFile.close()
-    
+
 def th2roman(txt):
     out = ''
     NORMALIZE_ROM = [ ('O', 'o'), ('x', 'ae'), ('@', 'oe'), ('N', 'ng'), ('U','ue'), ('?',''), ('|',' '), ('~','-'),('^','-'),("'",'-')]
@@ -687,8 +687,8 @@ def th2roman(txt):
         tran = re.sub(r"\-([^aeiou])",r"\1",tran)
         out += tran+'<s/>'
     return(out)
-    
-### end of modules used in g2p  ###############    
+
+### end of modules used in g2p  ###############
 ###################################################################
 ###### Thai word segmentation using maximum collocation approach
 ###### Input is a list of syllables
@@ -700,14 +700,14 @@ def wordseg_colloc(Input):
     global SegSep
     global WordSep
     global CollocSt
-    
+
     part = []
     chart = defaultdict(dict)
     SylSep = '~'
     outx = ""
     chart.clear()
     CollocSt = defaultdict(float)
-    
+
     part = Input.split(SegSep)
     for inx in part:
         SylLst = syl_segment(inx).split('~')
@@ -718,7 +718,7 @@ def wordseg_colloc(Input):
 #        gen_unknown_thaiw(SylLst)
         for i in range(EndOfSent):
             chart[i][i+1] = [SylLst[i]]
-        eng_abbr(SylLst)    
+        eng_abbr(SylLst)
         ############################################################
         for i in range(EndOfSent):
             for j in range(i,EndOfSent+1):
@@ -740,7 +740,7 @@ def wordseg_colloc(Input):
             outx += WordSep.join(chart[0][EndOfSent])
             return(outx)
         else:
-            return("<Fail>"+Input+"</Fail>")       
+            return("<Fail>"+Input+"</Fail>")
 
 ####################################################################
 
@@ -749,7 +749,7 @@ def wordseg_colloc(Input):
 def chartparse_mm():
     global chart
     global EndOfSent
-    
+
     for j in range(EndOfSent):
         chartx = deepcopy(chart)
         if j in chart[0]:
@@ -757,7 +757,7 @@ def chartparse_mm():
             for k in chart[j]:
                     s2 = chart[j][k]
 #                    print 0,j,k
-                    if k not in chart[0]:                        
+                    if k not in chart[0]:
                         chartx[0][k] = s1+s2
                     else:
                         if len(s1)+len(s2) <= len(chart[0][k]):
@@ -783,7 +783,7 @@ def chartparse_ngram():
             for k in chart[j]:
                     s2 = chart[j][k]
 #                    print 0,j,k
-                    if k not in chart[0]:                        
+                    if k not in chart[0]:
                         chartx[0][k] = s1+s2
                         CProb[k] = BigramProb(s1+s2)
 #                        print(s1+s2,'new',CProb[k])
@@ -808,7 +808,7 @@ def BigramProb(WLst):
         if cx > 0.:
             p += math.log(cx/1000000)
         else:
-            p += math.log(0.0001/1000000)    
+            p += math.log(0.0001/1000000)
 
     return(p)
 ##########################################
@@ -828,9 +828,9 @@ def compute_colloc(stat,w1,w2):
     if BiCount[(w1,w2)] < 1 or Count[w1] < 1 or Count[w2] < 1:
         BiCount[(w1,w2)] +=1
         Count[w1] +=1
-        Count[w2] +=1 
+        Count[w2] +=1
         TotalWord +=2
-    
+
 ###########################
 ##  Mutual Information
 ###########################
@@ -849,8 +849,8 @@ def compute_colloc(stat,w1,w2):
         value = float(TotalWord * (O11*O22 - O12 * O21)**2) / float((O11+O12)*(O11+O21)*(O12+O22)*(O21+O22))
 
     return(value)
-    
-##############################################################################    
+
+##############################################################################
 ########  create each unit (char/syllable) as a possible edge for chart parsing
 def gen_unknown_thaiw(SylLst):
     global chart
@@ -863,7 +863,7 @@ def gen_unknown_thaiw(SylLst):
             for newwrd in spell_candidates(SylLst[i]):
                     if newwrd in TDICT:
 #                        print(SylLst[i],'1=>',newwrd)
-                        chart[i][i+1] = [newwrd]            
+                        chart[i][i+1] = [newwrd]
 ### add two or three consecutive units that might be misspelled
         if ''.join(SylLst[i:i+2]) not in TDICT:
            for newwrd in spell_candidates(''.join(SylLst[i:i+2])):
@@ -875,11 +875,11 @@ def gen_unknown_thaiw(SylLst):
                     if newwrd in TDICT:
 #                        print(SylLst[i:i+3],'3=>',newwrd)
                         chart[i][i+3] = [newwrd]
-                        
+
     return(1)
 
 ####  gen a word from a sequence of English abbreviation
-####  e.g.  เอบีเอ็น เอ็นบีเค  
+####  e.g.  เอบีเอ็น เอ็นบีเค
 def eng_abbr(SylLst):
     global chart
     global EndOfSent
@@ -906,14 +906,14 @@ def eng_abbr(SylLst):
 def chart_parse():
     global chart
     global CollocSt
-    
+
     for j in range(EndOfSent):
         chartx = deepcopy(chart)
         if j in chart[0]:
             s1 = chart[0][j]
             for k in chart[j]:
                     s2 = chart[j][k]
-                    if k not in chart[0]:                        
+                    if k not in chart[0]:
                         chartx[0][k] = s1+s2
 #                        CollocSt[(0,k)] = (CollocSt[(0,j)] + CollocSt[(j,k)])/2.0
                         CollocSt[(0,k)] = CollocSt[(0,j)] + CollocSt[(j,k)]
@@ -936,14 +936,14 @@ def syl_segment(Input):
     global SSegSep
     output = ""
     out = ""
-    
+
     Input = preprocess(Input)
     sentLst = Input.split(SegSep)
     for s in sentLst:
 #        print "s:",s
         inLst = s.split(SSegSep)
         for inp in inLst:
-            if inp == '': continue            
+            if inp == '': continue
             objMatch = re.match(r"[^ก-์]+",inp)
             if objMatch:
                 out = inp
@@ -951,8 +951,8 @@ def syl_segment(Input):
                 out = sylseg(inp)
             output = output+out+SylSep
 #        output = output.rstrip(SylSep)
-        output = output+'<s/>'    ####write <s/> output for SegSep   
-    return(output)        
+        output = output+'<s/>'    ####write <s/> output for SegSep
+    return(output)
 
 #############################################################################################################
 ####### Segment syllable using trigram statistics, only strings matched with a defined syllable pattern will be created
@@ -960,14 +960,14 @@ def syl_segment(Input):
 def sylseg(Input):
     global SylSep
     global PRON
-    
+
     schart = defaultdict(dict)
     probEnd = defaultdict(float)
     schartx = {}
     schart.clear()
     probEnd.clear()
     tmp = []
-    
+
     EndOfInput = len(Input)
     for f in PRON:
         for i in range(EndOfInput):
@@ -978,7 +978,7 @@ def sylseg(Input):
                 schart[i][k] = [matchObj.group()]
                 probEnd[(i,k)] = prob_trisyl([matchObj.group()])
 #                print("match",i,k, matchObj.group(),f,probEnd[(i,k)])
-    
+
     for j in range(EndOfInput):
         schartx = deepcopy(schart)
         if j in schart[0]:
@@ -987,7 +987,7 @@ def sylseg(Input):
                     s2 = schart[j][k]
                     ####****** change this to merge only form, need to do this, otherwise probtrisyl is not correct.
                     tmp = mergekaran(s1+s2)
-                    if k not in schart[0]:                        
+                    if k not in schart[0]:
 #                        schartx[0][k] = s1+s2
 #                        probEnd[k] = prob_trisyl(s1+s2)
                         schartx[0][k] = tmp
@@ -998,11 +998,11 @@ def sylseg(Input):
                         p = prob_trisyl(tmp)
                         if p > probEnd[(0,k)]:
 #                            print("replace",tmp,p,probEnd[(0,k)])
-#                            schartx[0][k] = s1+s2 
-                            schartx[0][k] = tmp 
+#                            schartx[0][k] = s1+s2
+                            schartx[0][k] = tmp
                             probEnd[(0,k)] = p
         schart = deepcopy(schartx)
-    if EndOfInput in schart[0]:    
+    if EndOfInput in schart[0]:
         return(SylSep.join(schart[0][EndOfInput]))
     else:
         return('<Fail>'+Input+'</Fail>')
@@ -1056,7 +1056,7 @@ def mergekaran1(Lst):
             for ph in PRONUN[s]:
                 if (s+x,ph) not in MKaran:
                     PRONUN[s+x].append(ph)
-                    MKaran[(s+x,ph)] = 1 
+                    MKaran[(s+x,ph)] = 1
             s += x
             rs.append(s)
             Found = 'n'
@@ -1080,13 +1080,13 @@ def prob_trisyl(SylLst):
     global TotalLex
     global SegSep
     Prob = defaultdict(float)
-    
+
 #    SegSep = chr(127)
 
     pw2 = SegSep
     pw1 = SegSep
     Probx = 1.0
-    
+
     for w in SylLst:
         if (w,pw1,pw2) in Prob:
             Proba = Prob[(w,pw1,pw2)]
@@ -1098,7 +1098,7 @@ def prob_trisyl(SylLst):
         pw2 = pw1
         pw1 = w
 #    print("prob ",Probx)
-    
+
     return(Probx)
 
 ########################################
@@ -1113,13 +1113,13 @@ def prob_wb(w,pw1,pw2):
     global NoTrigram
     global TotalWord
     global TotalLex
-    
+
     p3 = 0.0
     p2 = 0.0
     p1 = 0.0
     p = 0.0
     px1 = 0.0
-    
+
 #    print "trigram ", pw2,pw1,w
 #    print "count ",TriCount[(pw2,pw1,w)],BiCount[(pw1,w)],Count[w]
     if TriCount[(pw2,pw1,w)] > 0:
@@ -1134,7 +1134,7 @@ def prob_wb(w,pw1,pw2):
 
     return(p)
 
-    
+
 
 ###### Read syllable pattern
 def read_sylpattern(Filename):
@@ -1143,13 +1143,13 @@ def read_sylpattern(Filename):
     global AK
     global MKaran
     global EngAbbr
-    
+
     stable = defaultdict(defaultdict)
     AK = defaultdict(str)
     MKaran = defaultdict(int)
 #    PRON = defaultdict(str)
-    
-    tmp = [] 
+
+    tmp = []
     file1 = open(Filename,'r',encoding = 'cp874')
     for line in file1:
         if re.match(r'#',line):
@@ -1171,10 +1171,10 @@ def read_sylpattern(Filename):
             tmp[0] = re.sub(r"T",u"[่้๊๋]",tmp[0])
         else:
             tmp[0] = re.sub(r"T",u"[่้๊๋]*",tmp[0])
-            
+
 #       print tmp[0]
         PRON[tmp[0]] = tmp[1]
-    
+
 #    for x in PRON:
 #        print x,PRON[x]
     stable['X'] = { 'ก' : 'k', 'ข' : 'kh' , 'ค' : 'kh', 'ฆ' : 'kh', 'ง' : 'N', 'จ' : 'c', 'ฉ' : 'ch', 'ช' : 'ch', 'ซ' : 's', 'ฌ' : 'ch','ญ' : 'j','ฎ' : 'd','ฏ' : 't','ฐ' : 'th','ฑ' : 'th','ฒ' : 'th','ณ' : 'n','ด' : 'd','ต' : 't','ถ' : 'th','ท' : 'th','ธ' : 'th','น' : 'n','บ' : 'b','ป' : 'p','ผ' : 'ph','ฝ' : 'f','พ' : 'ph','ฟ' : 'f','ภ' : 'ph','ม' : 'm','ย' : 'j','ร' : 'r','ฤ' : 'r','ล' : 'l','ฦ' : 'l','ว' : 'w','ศ' : 's','ษ' : 's','ส' : 's','ห' : 'h','ฬ' : 'l','อ' : '?','ฮ' : 'h' }
@@ -1186,7 +1186,7 @@ def read_sylpattern(Filename):
     stable['R'] = stable['X']
     stable['G'] = stable['X']
     stable['E'] = stable['X']
-    
+
     stable['D'] = stable['Y']
     stable['Z'] = stable['Y']
     stable['H'] = stable['Y']
@@ -1238,7 +1238,7 @@ def read_sylpattern(Filename):
 ##########  Read syllanle dict, pronunciation not conformed to sylrule is specified here
 def read_syldict(Filename):
     global PRON
-    
+
     file1 = open(Filename,'r',encoding='cp874')
     for line in file1:
         if re.match(r'#',line):
@@ -1266,7 +1266,7 @@ def read_stat(Filename):
     BiType = defaultdict(int)
     Count = defaultdict(int)
     Type = defaultdict(int)
-    
+
     TotalWord = 0
     TotalLex = 0
     TriCount.clear()
@@ -1275,7 +1275,7 @@ def read_stat(Filename):
     BiType.clear()
     Type.clear()
 
-    fileObject = open(Filename,'rb')  
+    fileObject = open(Filename,'rb')
     TriCount = pickle.load(fileObject)
     for (X,Y,Z) in TriCount:
         BiType[(X,Y)] += 1
@@ -1284,15 +1284,15 @@ def read_stat(Filename):
 
     for (X,Y) in BiCount:
         Type[X] += 1
-        
+
     for X in Count:
         TotalLex += 1
         TotalWord += Count[X]
-        
-    return(1)
-    
 
-########## Preprocess Thai texts  #### adding SegSep and <s> for speocal 
+    return(1)
+
+
+########## Preprocess Thai texts  #### adding SegSep and <s> for speocal
 def preprocess(input):
     global SegSep
     global SSegSep
@@ -1309,14 +1309,14 @@ def preprocess(input):
     ]
     for k, v in NORMALIZE_DICT:
         input = input.replace(k, v)
-########################################################        
+########################################################
 #    print input.encode('raw_unicode_escape')
 
   ##### change space\tab between [ET][ET] and [ET]  to be SegSep
 #    input = re.sub(r"([^\s\t\u00A0][\ุ\ู\ึ\ั\ี\๊\้\็\่\๋\ิ\ื\์]*[^\s\t\u00A0][\ุ\ู\ึ\ั\ี\๊\้\็\่\๋\ิ\ื\์]*)[\s\t\u00A0]+([^\s\t\u00A0])",r"\1"+SegSep+r"\2",input)
     input = re.sub(r"([^\s\t\u00A0]{3,})[\s\t\u00A0]+([^\s\t\u00A0]+)",r"\1"+SegSep+r"\2",input)
 
-    
+
    ##### change space\tab between [ET] and [ET][ET]  to be SegSep
 #    input = re.sub(r"([^\s\t\u00A0][\ุ\ู\ึ\ั\ี\๊\้\็\่\๋\ิ\ื\์]*)[\s\t\u00A0]+([^\s\t\u00A0][\ุ\ู\ึ\ั\ี\๊\้\็\่\๋\ิ\ื\์]*[^\s\t\u00A0][\ุ\ู\ึ\ั\ี\๊\้\็\่\๋\ิ\ื\์]*)",r"\1"+SegSep+r"\2",input)
     input = re.sub(r"([^\s\t\u00A0]+)[\s\t\u00A0]+([0-9]+)",r"\1"+SegSep+r"\2",input)
@@ -1352,10 +1352,10 @@ def initial():
     global PRON
     global CProb
 
-    PRON = {}    
+    PRON = {}
     TDICT = {}
     CProb = defaultdict(float)
-    
+
     SylSep = chr(126)
     WordSep = chr(124)
     SSegSep = chr(30)
@@ -1363,10 +1363,10 @@ def initial():
 
     path = os.path.abspath(__file__)
     ATA_PATH = os.path.dirname(path)
-    
+
 #    try:
 #        ATA_PATH = pkg_resources.resource_filename('tltk', '/')
-    
+
     read_sylpattern(ATA_PATH + '/sylrule.lts')
     read_syldict(ATA_PATH +  '/thaisyl.dict')
     read_stat(ATA_PATH + '/sylseg.3g')

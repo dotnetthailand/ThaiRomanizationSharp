@@ -1,8 +1,19 @@
+# ThaiRomanizationSharp
+- The .NET project that wraps Thai Romanization in [Thai Language Toolkit Project](https://github.com/attapol/tltk) to simplify usage in other .NET projects.
+
+# Credit
+- Credit to [Assoc.Prof. Wirote Aroonmanakun (Ph.D.)](http://pioneer.chula.ac.th/~awirote/)
+- Director of the Siridhorn Thai Language Institute, Chulalongkorn University
+- Original code is from https://github.com/attapol/tltk/blob/master/tltk/nlp.py.
+- Thai Romanization main project page http://pioneer.chula.ac.th/~awirote/resources/thai-romanization.html.
+
 # How to run the project locally
 
+
 ## Prerequisite
-- A computer with Ubuntu OS, I use Ubuntu 18.04 but this instruction can be applied 20.04 as well.
+- A computer with Ubuntu OS, I use Ubuntu 18.04 (Bionic) but this instruction can be applied to Ubuntu 20.04 as well.
 - You can also use WSL2 + Ubuntu.
+- Visual Studio Code
 
 ## Install required software
 - Open a new terminal and start in your home directory.
@@ -31,8 +42,8 @@
   ```
 - We should get Python version `3.6.9` or newer.
 - Install pip by excuting the following command:
-  ```
-    $ sudo apt install python3-pip
+  ```sh
+  $ sudo apt install python3-pip
   ```
 - Check installed pip3 version.
   ```
@@ -41,7 +52,7 @@
 - We should get pip version `9.0.1` or newer.
 - Set default python and pip command to version 3
   ```sh
-  vi .bashrc
+  $ vi .bashrc
   ```
 - Add alias for python and pip to the end of .bashrc file.
   ```
@@ -74,7 +85,7 @@
 - Add `PYTHONNET_PYDLL` environment variable which has value equal to libpython path
   by editing .bashrc file.
   ```sh
-  vi .bashrc
+  $ vi .bashrc
   ```
 - Define PYTHONNET_PYDLL variable and paste a value from copied pythonlib path
   to the bottom of .bashrc
@@ -94,34 +105,41 @@
   ```
 - CD to the project folder.
 - Open the project with VS Code
-```sh
-code .
-```
+  ```sh
+  code .
+  ```
 - The structure of the project is:
-```sh
-$ tree -I 'bin|obj' ThaiRomanizationSharp
-ThaiRomanizationSharp/
-├── LICENSE
-├── PhSTrigram.sts
-├── Program.cs
-├── README.md
-├── ThaiRomanizationSharp.csproj
-├── find_libpython.py
-├── nlp.py
-├── sylrule.lts
-├── sylseg.3g
-├── thaisyl.dict
-└── thdict
-```
+  ```sh
+  $ tree -I 'bin|obj' ThaiRomanizationSharp
+  ThaiRomanizationSharp/
+  ├── LICENSE
+  ├── PhSTrigram.sts
+  ├── Program.cs
+  ├── README.md
+  ├── ThaiRomanizationSharp.csproj
+  ├── find_libpython.py
+  ├── nlp.py
+  ├── sylrule.lts
+  ├── sylseg.3g
+  ├── thaisyl.dict
+  └── thdict
+  ```
 
 ## Run the project
 - In VS Code open integrated terminal by pressing **ctrl+`**.
 - The terminal should start from the root of the project.
 - Run the project with the following command:
-```sh
-$ dotnet run
-```
+  ```sh
+  $ dotnet run
+  ```
 - Wait for a while and you should find an output message in the integrated terminal.
 
 
-# Reference & Credit
+# Reference & useful links
+
+# Todo
+- [ ] More details what code changes in nlp.py
+- [ ] Convert project to a class library
+- [ ] Unit test with xUnit
+- [ ] GitHub Actions to run a unit test
+- [ ] GitHub Actions to deploy a library to Nuget and release page
