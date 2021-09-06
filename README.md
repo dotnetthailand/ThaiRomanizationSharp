@@ -143,3 +143,5 @@
 - [ ] Unit test with xUnit
 - [ ] GitHub Actions to run a unit test
 - [ ] GitHub Actions to deploy a library to Nuget and release page
+- [ ] Custom Docker image
+- [ ] Deploy example project to Azure App Service container

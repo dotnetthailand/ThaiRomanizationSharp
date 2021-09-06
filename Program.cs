@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
-//using Python.Included;
 using Python.Runtime;
 
-namespace ThaiLanguageToolkit
+namespace ThaiRomanizationSharp
 {
     public class Program
     {
@@ -14,32 +11,14 @@ namespace ThaiLanguageToolkit
             var stopWatch = new Stopwatch();
             stopWatch.Start();
 
-            // This example demonstrates how Python.Included is able to automatically install a minimal Python
-            // environment which it includes as an embedded resource in its .NET assembly file
-            // Python.Included is currently fixed to Python 3.7.3 amd64 for windows
-            // If you need a different Python version or platform check out the Python.Installer examples!
-
-            // Install to local directory
-            //Installer.InstallPath = Path.GetFullPath(".");
-
-            // See what the installer is doing
-            //Installer.LogMessage += Console.WriteLine;
-
-            // Install the embedded python distribution
-            //await Installer.SetupPython();
-
-            // Install pip3 for package installation
-            //Installer.TryInstallPip();
-
-            // Use pythonnet from that installation
             PythonEngine.Initialize();
 
-            // Add your a path to your Python file as a searched module path
+            // Add a path to your Python file as a searched module path
             dynamic os = Py.Import("os");
             dynamic sys = Py.Import("sys");
             sys.path.append(os.getcwd());
 
-            //https://pypi.org/project/tltk/#:~:text=pip%20install-,tltk,-Copy%20PIP%20instructions
+            // https://pypi.org/project/tltk/#:~:text=pip%20install-,tltk,-Copy%20PIP%20instructions
             dynamic nlp = Py.Import("nlp");
             var roman = nlp.th2roman("ขอบคุณทุกอย่าง จ๊ะ");
             Console.WriteLine(roman);
