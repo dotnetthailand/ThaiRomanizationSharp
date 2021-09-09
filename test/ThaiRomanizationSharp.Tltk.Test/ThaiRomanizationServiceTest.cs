@@ -1,7 +1,7 @@
 using Xunit;
 using Xunit.Abstractions;
 
-namespace ThaiRomanizationSharp.Test
+namespace ThaiRomanizationSharp.Tltk.Test
 {
     public class ThaiRomanizationServiceTest
     {

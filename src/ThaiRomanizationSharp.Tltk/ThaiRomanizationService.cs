@@ -1,7 +1,7 @@
 ﻿using System;
 using Python.Runtime;
 
-namespace ThaiRomanizationSharp
+namespace ThaiRomanizationSharp.Tltk
 {
     public class ThaiRomanizationService : IDisposable
     {
