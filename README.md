@@ -134,10 +134,12 @@
   ```
 - Wait for a while and you should find an output message in the integrated terminal.
 
-
-# Reference & useful links
+# Reference & useful resources
 - https://github.com/PyThaiNLP/pythainlp/issues/11
 - https://github.com/comdevx/thai2karaoke
+- [Debugging with Code lens option](https://github.com/formulahendry/vscode-dotnet-test-explorer#debugging-alpha)
+- [Not launching debugger issue](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/247)
+- [XUnit.ITestOutputHelper.WriteLine not showing up issue](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/94)
 
 # Todo
 - [ ] More details what code changes in nlp.py

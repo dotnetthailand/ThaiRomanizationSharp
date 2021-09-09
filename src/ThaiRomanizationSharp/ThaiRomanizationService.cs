@@ -1,25 +1,27 @@
-﻿using Python.Runtime;
+﻿using System;
+using Python.Runtime;
 
 namespace ThaiRomanizationSharp
 {
-    public class ThaiRomanizationService
+    public class ThaiRomanizationService : IDisposable
     {
-        public string ToRoman(string inputThaiText)
+        private readonly dynamic nlp;
+
+        public ThaiRomanizationService()
         {
             PythonEngine.Initialize();
-
             // Add a path to your Python file as a searched module path
             dynamic os = Py.Import("os");
             dynamic sys = Py.Import("sys");
-            sys.path.append(os.getcwd());
+            var currentWorkingDirectory = os.getcwd();
+            sys.path.append(currentWorkingDirectory);
 
             // https://pypi.org/project/tltk/#:~:text=pip%20install-,tltk,-Copy%20PIP%20instructions
-            dynamic nlp = Py.Import("nlp");
-
-            var roman = nlp.th2roman(inputThaiText);
-            PythonEngine.Shutdown();
-
-            return roman;
+            nlp = Py.Import("nlp");
         }
+
+        public string ToRoman(string inputThaiText) => nlp.th2roman(inputThaiText);
+
+        public void Dispose() => PythonEngine.Shutdown();
     }
 }

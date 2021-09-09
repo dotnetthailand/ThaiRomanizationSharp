@@ -6,20 +6,24 @@ namespace ThaiRomanizationSharp.Test
     public class ThaiRomanizationServiceTest
     {
         private readonly ITestOutputHelper output;
+        private readonly ThaiRomanizationService thaiRomanizationService;
 
         public ThaiRomanizationServiceTest(ITestOutputHelper output)
         {
             this.output = output;
+            this.thaiRomanizationService = new ThaiRomanizationService();
         }
 
-        [Fact]
-        public void ToRoman_ValidInput_ReturnTrue()
+        [Theory]
+        [InlineData("นะจ๊ะ", "na ca <s/>")]
+        [InlineData("ไม่รู้ ไม่รู้", "mai ru <s/>mai ru <s/>")]
+        public void ToRoman_ValidInput_ReturnCorrect(string inputText, string expectedOutputText)
         {
-            // Not work now
-            // https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/94
-            output.WriteLine("hello world");
-            Assert.True(true);
-        }
+            var actualOutputText = thaiRomanizationService.ToRoman(inputText);
+            // There is a output if you run a test with "Run Test" code lens but not .NET Core Test Explorer
+            output.WriteLine($"expectedOutputText: {actualOutputText}");
 
+            Assert.Equal(expectedOutputText, actualOutputText);
+        }
     }
 }
