@@ -1,9 +1,9 @@
-﻿using System;
-using Python.Runtime;
+﻿using Python.Runtime;
+using ThaiRomanizationSharp.Abstractions;
 
 namespace ThaiRomanizationSharp.Tltk
 {
-    public class ThaiRomanizationService : IDisposable
+    public class ThaiRomanizationService : IThaiRomanizationService
     {
         private readonly dynamic nlp;
 
@@ -20,7 +20,7 @@ namespace ThaiRomanizationSharp.Tltk
             nlp = Py.Import("nlp");
         }
 
-        public string ToRoman(string inputThaiText) => nlp.th2roman(inputThaiText);
+        public string Romanize(string inputThaiText) => nlp.th2roman(inputThaiText);
 
         public void Dispose() => PythonEngine.Shutdown();
     }

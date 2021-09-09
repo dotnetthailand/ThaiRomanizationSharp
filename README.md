@@ -2,7 +2,7 @@
 
 This .NET project contains several implementations of [Romanization](https://en.wikipedia.org/wiki/Romanization) of Thai text.
 
-For example, "สวัสดี" is "romanized" to "sawatdi"
+For example, `สวัสดี` is "romanized" to `sawatdi`.
 
 There are currently two romanization algorithms:
 
@@ -10,6 +10,22 @@ There are currently two romanization algorithms:
     - This implementation invokes Python code, and requires python to be installed.
 1. The **Thai2Rom** algorithm [originally from here](https://github.com/PyThaiNLP/pythainlp).
     - This implementation runs native code (using the Torch machine learning framework -- available for Mac OS / Windows / Linux). The native code for these 3 platforms is bundled in the project and no installation is required.
+    - Currently does not do word-separation; the romanized characters follow the same spacing as the input Thai text.
+
+# Usage
+
+```csharp
+
+using ThaiRomanizationSharp.Tltk;
+IThaiRomanizationService romanizer = new ThaiRomanizationService();
+string english = romanizer.Romanize("สวัสดี"); 
+
+// or
+
+using ThaiRomanizationSharp.Thai2Rom;
+IThaiRomanizationService romanizer = new Thai2RomService();
+string english = romanizer.Romanize("สวัสดี"); 
+```
 
 # Credits for Thai Language Toolkit
 
