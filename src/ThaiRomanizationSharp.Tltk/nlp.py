@@ -8,9 +8,8 @@
 ## Chulalongkorn University
 ## word_segmentation, syl_segementation written by Wirote Aroonmanakun
 ## Implemented :
-##      chunk, ner_tag, segment, word_segment, syl_segment, word_segment_mm, word_segment_nbest,
-##      g2p, th2roman, pos_tag_wordlist,
-##      read_thaidict, reset_thaidict, check_thaidict
+##      ner_tag, segment, word_segment, syl_segment
+##      g2p, th2roman
 ##      spell_candidates,
 #########################################################
 import re
@@ -66,7 +65,6 @@ def word2features(sent, i):
         'bias': 1.0,
         'word': word,
         'postag': postag,
-        'len': wrd_len(word)
     }
     if i > 0:
         word1 = sent[i-1][0]
@@ -235,7 +233,6 @@ def distance(sentence,index):
 
 #############################################################################################################
 ### Thai grapheme to phoneme
-### Input = a chunk of Thai texts
 ### orginal written in Perl, ported to Python on May 17, 2018
 #############################################################################################################
 def g2p(Input):

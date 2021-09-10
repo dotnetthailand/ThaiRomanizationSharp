@@ -77,3 +77,29 @@ The C# code of the Thai2Rom algorithm is based on the Python code from the PyTha
 - [ ] GitHub Actions to deploy a library to Nuget and release page
 - [ ] Custom Docker image
 - [ ] Deploy example project to Azure App Service container
+
+# Removed function in nlp.py
+```
+read_thaidict
+reset_thaidict
+check_thaidict
+edits2
+pos_tag
+pos_tag_wordlist
+pos_load
+change_tag
+chunk
+ner
+ner_load
+wrd_len
+g2p_all
+sylparse_all
+th2ipa
+word_segmentX
+wordseg_w2v
+word_segment_nbest
+wordsegmm_bn
+chartparse_mm_bn
+word_segment_mm
+wordseg_mm
+```
