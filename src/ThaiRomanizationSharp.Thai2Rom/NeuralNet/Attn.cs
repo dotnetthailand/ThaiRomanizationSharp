@@ -1,30 +1,24 @@
-﻿using System;
-using TorchSharp.Modules;
+﻿using TorchSharp.Modules;
 using static TorchSharp.torch;
 using F = TorchSharp.torch.nn.functional;
 
 namespace ThaiRomanizationSharp.Thai2Rom.NeuralNet
 {
+    /// <remarks>
+    /// The original Attn implementation supported several "methods", but only used the "general" method.
+    /// We only ported the "general" method.
+    /// </remarks>
     internal sealed class Attn : nn.CustomModule
     {
-        private readonly string method;
         private readonly long hiddenSize;
         private readonly Linear attn;
 
-        public Attn(string method, long hiddenSize)
-            :base("attn")
+        public Attn(long hiddenSize)
+            : base("attn")
         {
-            this.method = method;
             this.hiddenSize = hiddenSize;
 
-            if(this.method == "general")
-            {
-                this.attn = nn.Linear(this.hiddenSize, hiddenSize);
-            }
-            else// if(this.method == "concat")
-            {
-                throw new NotImplementedException("not used in original python program");
-            }
+            this.attn = nn.Linear(this.hiddenSize, hiddenSize);
 
             RegisterComponents();
         }
@@ -33,27 +27,18 @@ namespace ThaiRomanizationSharp.Thai2Rom.NeuralNet
         {
             // Calculate energies for each encoder output
             Tensor attnEnergies;
-            if(this.method == "dot")
-            {
-                throw new NotImplementedException("not used in original python program");
-            }
-            else if (this.method == "general")
-            {
-                attnEnergies = this.attn.forward(
-                    encoderOutputs.view(-1, encoderOutputs.size(-1))
-                ); // (batch_size * sequence_len,  hidden_size)
-                attnEnergies = attnEnergies
-                    .view(encoderOutputs.size())
-                    .bmm(
-                        hidden.transpose(1, 2))
-                    .squeeze(
-                        2
-                    );
-            }
-            else// if (this.method == "concat")
-            {
-                throw new NotImplementedException("not used in original python program");
-            }
+
+            attnEnergies = this.attn.forward(
+                encoderOutputs.view(-1, encoderOutputs.size(-1))
+            ); // shape is (batch_size * sequence_len,  hidden_size)
+
+            attnEnergies = attnEnergies
+                .view(encoderOutputs.size())
+                .bmm(
+                    hidden.transpose(1, 2))
+                .squeeze(
+                    2
+                );
 
             attnEnergies = attnEnergies.masked_fill(mask.eq(0), -1e10);
 

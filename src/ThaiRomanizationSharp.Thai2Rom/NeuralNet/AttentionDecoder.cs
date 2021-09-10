@@ -31,7 +31,7 @@ namespace ThaiRomanizationSharp.Thai2Rom.NeuralNet
                 batchFirst: true
             );
 
-            this.attn = new Attn(method: "general", hiddenSize: this.HiddenSize);
+            this.attn = new Attn(hiddenSize: this.HiddenSize);
             this.linear = nn.Linear(hiddenSize, vocabularySize);
 
             this.dropout = nn.Dropout(dropout);

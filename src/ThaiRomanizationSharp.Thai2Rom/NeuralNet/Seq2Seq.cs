@@ -8,6 +8,14 @@ namespace ThaiRomanizationSharp.Thai2Rom.NeuralNet
 {
     using static ThaiRomanizationSharp.Thai2Rom.Extensions;
 
+    /// <summary>
+    /// Seq2Seq model for translation (https://en.wikipedia.org/wiki/Seq2seq). This is the root or neural net.
+    /// </summary>
+    /// <remarks>
+    /// https://www.youtube.com/watch?v=MqugtGD605k
+    /// https://medium.com/@devnag/seq2seq-the-clown-car-of-deep-learning-f88e1204dac3
+    /// https://www.youtube.com/watch?v=sQUqQddQtB4&t=449s
+    /// </remarks>
     internal sealed class Seq2Seq : nn.CustomModule
     {
         private readonly Encoder encoder;
