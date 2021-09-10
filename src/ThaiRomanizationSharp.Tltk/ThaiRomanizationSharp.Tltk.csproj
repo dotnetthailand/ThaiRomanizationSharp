@@ -28,4 +28,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ThaiRomanizationSharp.Abstractions\ThaiRomanizationSharp.Abstractions.csproj" />
+  </ItemGroup>
 </Project>

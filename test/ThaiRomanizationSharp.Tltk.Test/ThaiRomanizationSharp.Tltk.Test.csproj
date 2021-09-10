@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ThaiRomanizationSharp\ThaiRomanizationSharp.csproj" />
+    <ProjectReference Include="..\..\src\ThaiRomanizationSharp.Tltk\ThaiRomanizationSharp.Tltk.csproj" />
   </ItemGroup>
 
 </Project>

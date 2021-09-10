@@ -1,21 +1,12 @@
-# ThaiRomanizationSharp
-- The .NET project that wraps Thai Romanization in [Thai Language Toolkit Project](https://github.com/attapol/tltk) to simplify usage in other .NET projects.
 
-# Credit
-- Credit to [Assoc.Prof. Wirote Aroonmanakun (Ph.D.)](http://pioneer.chula.ac.th/~awirote/)
-- Director of the Siridhorn Thai Language Institute, Chulalongkorn University
-- Original code is from https://github.com/attapol/tltk/blob/master/tltk/nlp.py.
-- Thai Romanization main project page http://pioneer.chula.ac.th/~awirote/resources/thai-romanization.html.
+## Prerequisites for Thai Language Toolkit Project
 
-# How to run the project locally
-
-
-## Prerequisite
 - A computer with Ubuntu OS, I use Ubuntu 18.04 (Bionic) but this instruction can be applied to Ubuntu 20.04 as well.
 - You can also use WSL2 + Ubuntu.
 - Visual Studio Code
 
-## Install required software
+## Install required software for Thai Language Toolkit Project
+
 - Open a new terminal and start in your home directory.
 - Install .NET by follow [this instruction](https://www.dotnetthailand.com/programming-cookbook/wsl-powershell-useful-scripts/install-dotnet)
 - Install Mono by executing the following commands:
@@ -110,8 +101,8 @@
   ```
 - The structure of the project is:
   ```sh
-  $ tree -I 'bin|obj' ThaiRomanizationSharp
-  ThaiRomanizationSharp/
+  $ tree -I 'bin|obj' ThaiRomanizationSharp/src/ThaiRomanizationSharp.Tltp
+  ThaiRomanizationSharp.Tltp/
   ├── LICENSE
   ├── PhSTrigram.sts
   ├── Program.cs
@@ -124,32 +115,3 @@
   ├── thaisyl.dict
   └── thdict
   ```
-
-## Run the project
-- In VS Code open integrated terminal by pressing **ctrl+`**.
-- The terminal should start from the root of the project.
-- Run the project with the following command:
-  ```sh
-  $ dotnet run
-  ```
-- Wait for a while and you should find an output message in the integrated terminal.
-
-
-# Reference & useful links
-- https://github.com/PyThaiNLP/pythainlp/issues/11
-- https://github.com/comdevx/thai2karaoke
-
-# How to create an xUnit with dotnet command.
-```
-$ dotnet new xunit -o ThaiRomanizationSharp.Test
-
-```
-
-# Todo
-- [ ] More details what code changes in nlp.py
-- [ ] Convert project to a class library
-- [ ] Unit test with xUnit
-- [ ] GitHub Actions to run a unit test
-- [ ] GitHub Actions to deploy a library to Nuget and release page
-- [ ] Custom Docker image
-- [ ] Deploy example project to Azure App Service container
