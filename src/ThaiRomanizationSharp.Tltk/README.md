@@ -50,7 +50,7 @@
   $ alias python=python3
   $ alias pip=pip3
   ```
-- Save and exit Vi by pressing `esc` and typing ```:wq```.
+- Save and exit Vi by pressing `esc` and typing `:wq`.
 - Load new configuration by sourcing .bashrc.
   ```sh
   $ source .bashrc
@@ -121,4 +121,4 @@
   ```
 ## Output
 
-<img src="https://github.com/dotnetthailand/ThaiRomanizationSharp/tree/main/src/ThaiRomanizationSharp.Tltk/output-img.png">
+<img src="https://github.com/dotnetthailand/ThaiRomanizationSharp/blob/main/src/ThaiRomanizationSharp.Tltk/output-img.png">
