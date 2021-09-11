@@ -1,5 +1,5 @@
 
-## Prerequisites for Thai Language Toolkit Project
+## Prerequisites for [Thai Language Toolkit](https://github.com/attapol/tltk) Project
 
 - A computer with Ubuntu OS, I use Ubuntu 18.04 (Bionic) but this instruction can be applied to Ubuntu 20.04 as well.
 - You can also use WSL2 + Ubuntu.
@@ -8,7 +8,7 @@
 ## Install required software for Thai Language Toolkit Project
 
 - Open a new terminal and start in your home directory.
-- Install .NET by follow [this instruction](https://www.dotnetthailand.com/programming-cookbook/wsl-powershell-useful-scripts/install-dotnet)
+- Install .NET by following [this instruction](https://www.dotnetthailand.com/programming-cookbook/wsl-powershell-useful-scripts/install-dotnet)
 - Install Mono by executing the following commands:
   ```sh
   $ sudo apt install gnupg ca-certificates
@@ -17,7 +17,7 @@
   $ sudo apt update
   $ sudo apt install mono-devel
   ```
-- Verfify if Mono has been installed successfully
+- Verify if Mono has been installed successfully
   ```
   $ mono --version
   ```
@@ -27,12 +27,12 @@
   $ sudo apt update && sudo apt -y upgrade
   $ sudo apt install python3
   ```
-- Verify if Python has been installed successfully by checking a vesion.
+- Verify if Python has been installed successfully by checking a version.
   ```sh
   $ python3 --version
   ```
 - We should get Python version `3.6.9` or newer.
-- Install pip by excuting the following command:
+- Install pip by executing the following command:
   ```sh
   $ sudo apt install python3-pip
   ```
@@ -50,7 +50,7 @@
   $ alias python=python3
   $ alias pip=pip3
   ```
-- Save and exit Vi by typing `:wq`.
+- Save and exit Vi by pressing `esc` and typing ```:wq```.
 - Load new configuration by sourcing .bashrc.
   ```sh
   $ source .bashrc
@@ -83,7 +83,7 @@
   ```
   export PYTHONNET_PYDLL=/usr/lib/x86_64-linux-gnu/libpython3.6m.so
   ```
-- Save .bashrc and exit Vi by typing `:wq`.
+- Save .bashrc and exit Vi by pressing `esc` and typing `:wq`. 
 - Load new configuration by sourcing .bashrc.
   ```sh
   $ source .bashrc
@@ -97,12 +97,12 @@
 - CD to the project folder.
 - Open the project with VS Code
   ```sh
-  code .
+  $ code .
   ```
 - The structure of the project is:
   ```sh
-  $ tree -I 'bin|obj' ThaiRomanizationSharp/src/ThaiRomanizationSharp.Tltp
-  ThaiRomanizationSharp.Tltp/
+  $ tree -I 'bin|obj' ThaiRomanizationSharp/src/ThaiRomanizationSharp.Tltk
+  ThaiRomanizationSharp.Tltk/
   ├── LICENSE
   ├── PhSTrigram.sts
   ├── Program.cs
@@ -115,3 +115,10 @@
   ├── thaisyl.dict
   └── thdict
   ```
+- Run the project with the following command:
+  ```
+  $ dot net run
+  ```
+## Output
+
+<img src="https://github.com/dotnetthailand/ThaiRomanizationSharp/tree/main/src/ThaiRomanizationSharp.Tltk/output-img.png">
