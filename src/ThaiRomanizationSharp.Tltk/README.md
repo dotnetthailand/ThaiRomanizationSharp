@@ -117,8 +117,9 @@
   ```
 - Run the project with the following command:
   ```
-  $ dot net run
+  $ dotnet run
   ```
 ## Output
+- The result should be like the following image, if you get any error, please go back and check the required software again.
 
 <img src="https://github.com/dotnetthailand/ThaiRomanizationSharp/blob/main/src/ThaiRomanizationSharp.Tltk/output-img.png">
