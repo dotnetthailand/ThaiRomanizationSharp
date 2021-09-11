@@ -117,7 +117,7 @@
   ```
 - Run the project with the following command:
   ```
-  $ dotnet run
+  $ dotnet test
   ```
 ## Output
 - The result should be like the following image, if you get any error, please go back and check the required software again.
