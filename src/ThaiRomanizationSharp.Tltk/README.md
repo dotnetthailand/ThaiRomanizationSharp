@@ -78,8 +78,8 @@
   ```sh
   $ vi .bashrc
   ```
-- Define PYTHONNET_PYDLL variable and paste a value from copied pythonlib path
-  to the bottom of .bashrc
+- Define the PYTHONNET_PYDLL variable and paste a value from copied pythonlib path
+  to the bottom of the .bashrc
   ```
   export PYTHONNET_PYDLL=/usr/lib/x86_64-linux-gnu/libpython3.6m.so
   ```
