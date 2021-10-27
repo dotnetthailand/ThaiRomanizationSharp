@@ -3,7 +3,11 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
+    <!--
+      Explicitly set language version
+      https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/configure-language-version#c-language-version-reference
+    -->
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

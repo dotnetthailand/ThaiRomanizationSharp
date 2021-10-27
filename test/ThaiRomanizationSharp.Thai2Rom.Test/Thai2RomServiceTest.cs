@@ -15,6 +15,7 @@ namespace ThaiRomanizationSharp.Thai2Rom.Test
         [InlineData("สวัสดี", "sawatdi")]
         [InlineData("นะจ๊ะ", "nacha")]
         [InlineData("ไม่รู้ ไม่รู้", "mairu mairu")]
+        [InlineData("คนหัวโบราณ", "khonhuaboran")]
         // thai intermixed with other languages. Should leave the other languages alone.
         [InlineData("สวัสดี Hello こんにちは สวัสดีตอนเย็น", "sawatdi Hello こんにちは sawatditonyen")]
         // misc weird characters shouldn't be touched and shouldn't crash.
