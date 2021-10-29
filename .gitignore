@@ -7,3 +7,6 @@ python*
 __pycache__
 
 .vs
+
+# Ignore annoying MAC OS file
+.DS_Store
