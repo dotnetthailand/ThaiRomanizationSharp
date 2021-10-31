@@ -2,7 +2,7 @@ name: ci-pull-request
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ develop ]
 
 jobs:
   build:
