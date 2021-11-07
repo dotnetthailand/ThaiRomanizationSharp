@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThaiRomanizationSharp.Abstr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThaiRomanizationSharp.Thai2Rom.Test", "test\ThaiRomanizationSharp.Thai2Rom.Test\ThaiRomanizationSharp.Thai2Rom.Test.csproj", "{EDA25069-BF58-42F6-A0C4-814EFE886E71}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThaiRomanizationSharp.Thai2Rom.ConsoleApp", "src\ThaiRomanizationSharp.Thai2Rom.ConsoleApp\ThaiRomanizationSharp.Thai2Rom.ConsoleApp.csproj", "{B8FDAB44-253F-43BF-BBAE-87327AF386B5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{EDA25069-BF58-42F6-A0C4-814EFE886E71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EDA25069-BF58-42F6-A0C4-814EFE886E71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EDA25069-BF58-42F6-A0C4-814EFE886E71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8FDAB44-253F-43BF-BBAE-87327AF386B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8FDAB44-253F-43BF-BBAE-87327AF386B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8FDAB44-253F-43BF-BBAE-87327AF386B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8FDAB44-253F-43BF-BBAE-87327AF386B5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,6 +59,7 @@ Global
 		{B233DEE0-3DF5-4424-B6DB-E59033613071} = {DD69B5DD-4BA7-4095-BCAA-D8C86A7FD3CD}
 		{F21C3550-B987-4CB9-AE23-E1EE77F00D45} = {DD69B5DD-4BA7-4095-BCAA-D8C86A7FD3CD}
 		{EDA25069-BF58-42F6-A0C4-814EFE886E71} = {70DB262A-9F57-43AC-B0F3-B8B10901ABCA}
+		{B8FDAB44-253F-43BF-BBAE-87327AF386B5} = {DD69B5DD-4BA7-4095-BCAA-D8C86A7FD3CD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {34FDDEAF-DB25-4D9E-B58C-71E06AE35E5B}
