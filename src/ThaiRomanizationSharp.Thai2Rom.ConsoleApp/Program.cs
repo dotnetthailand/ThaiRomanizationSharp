@@ -11,20 +11,21 @@ namespace ThaiRomanizationSharp.Thai2Rom.ConsoleApp
         {
             const string path = @"";
             var filePaths = Directory.GetFiles(path, "*.flac", SearchOption.AllDirectories);
-            //Wait for debugging Console.ReadKey();
+            // Wait for debugging
+            // Console.ReadKey();
 
             foreach (var filePath in filePaths)
             {
                 var tagFile = TagLib.File.Create(filePath);
-                string title = tagFile.Tag.Title;
-                TimeSpan duration = tagFile.Properties.Duration;
+                var title = tagFile.Tag.Title;
+                var duration = tagFile.Properties.Duration;
                 Console.WriteLine("Title: {0}, duration: {1}", title, duration);
 
-                var titleCharacter = title.ToCharArray();
+                var romanizedTitle = service.Romanize(title);
+                var titleCharacter = romanizedTitle.ToCharArray();
                 titleCharacter[0] = char.ToUpper(titleCharacter[0]);
 
-                // change title in the file
-                // tagFile.Tag.Title = service.Romanize(title);
+                // Change title tag in the current file
                 tagFile.Tag.Title = new string(titleCharacter);
                 tagFile.Save();
             }
